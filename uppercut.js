@@ -13,9 +13,10 @@
         
     };
 
-    /*  */
+    /* Datas */
     var data = {
-        
+        main_id: null, /* Main container id */
+        main_cont: null /* Main container */
     };
 
     var uppercut_funcs = {
@@ -25,7 +26,27 @@
         create: function(options, input) {
             var info = this;
 
+            /* Replace default options with requested options */
+            info.options = $.extend({}, options, options);
+            info.data = $.extend({}, data, {});
 
+            /* Get or set id */
+            if ($(input).attr('id')) {
+                info.data.main_id = $(input).attr('id');
+            } else {
+                info.data.main_id = Math.ceil(Math.random() * 100000);
+                $(input).attr('id', info.data.main_id);
+            }
+            info.data.main_cont = $(input);
+
+            /* Add buttons */
+            info.data.main_cont.append('<a class="click_upload" href="javascript:;">Click to upload</a>');
+            info.data.main_cont.find('.click_upload').click(function(){
+                info.data.main_cont.find('.input_upload').click();
+            });
+
+            /* Add Input field */
+            info.data.main_cont.append('<input style="display: none;" class="input_upload" type="file" name="upload" />');
         }
     };
 
