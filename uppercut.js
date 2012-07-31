@@ -10,7 +10,11 @@
 
     /* Options */
     var options = {
-        
+        url: false, /* Url of location where upload image will go */
+
+        /* Image button options - Default button or image */
+        browse_text: 'Browse', /* Text of default button */
+        browse_image: false /* Image location of browse button */
     };
 
     /* Datas */
@@ -26,13 +30,13 @@
         /************************/
         create: function(options, input) {
             var info = this;
-            
 
             /* Replace default options with requested options */
             info.options = $.extend({}, options, options);
             info.data = $.extend({}, data, {});
             
-            info.check_html5();
+            /* Check if html */
+            info._check_html5();
 
             /* Get or set id */
             if ($(input).attr('id')) {
@@ -42,48 +46,54 @@
                 $(input).attr('id', info.data.main_id);
             }
             info.data.main_cont = $(input);
-			
-			if(true){
-				info.data.main_cont.append('<a class="click_upload" href="javascript:;">Click to upload</a>');
-	            info.data.main_cont.find('.click_upload').click(function(){
-	                $('#someId').contents().find('#myinput').click();
-	            });
-	            $('<iframe id="someId" ').load(function(){
-	            	$('#someId').contents().find('body').append('<form action="test.php" method="post" enctype="multipart/form-data"><input type="file" name="woot" id="myinput"></form>');
-	            	var input = $('#someId').contents().find('input[type=file]');
-	            	console.log(input);
-	            	input.change(function() {
-						$(this).parent().submit();
-					});
-	            }).appendTo(info.data.main_cont);
-	            
-	            
-	            	
-						            
 
-				/*info.data.main_cont.append('<iframe id="cooliframe" src="about:blank"><div class="awesome"></div></iframe>');
-				console.log($('#cooliframe').contents().find('body'));
-				info.data.main_cont.find('#cooliframe').contents().find('.awesome').append('test');*/
-			}
+            /* Add hidden input file field */
+            info.data.main_cont.append('<input style="display: none;" class="upcut_input_upload" type="file" name="upload" />');
 			
-			
-            /* Add buttons 
-            info.data.main_cont.append('<a class="click_upload" href="javascript:;">Click to upload</a>');
-            info.data.main_cont.find('.click_upload').click(function(){
-                info.data.main_cont.find('.input_upload').click();
+            /* Add upload click button */
+            if(info.options.browse_image){
+                /* Load image for button */
+                info.data.main_cont.append('<div class="upcut_image_browse upcut_browse_btn"><img src="'+info.options.browse_image+'" /></div>');
+            } else {
+                /* Load css style browse button */
+                info.data.main_cont.append('<div class="upcut_css upcut_browse_btn">'+info.options.browse_text+'</div>');
+            }
+            
+            /* Add click event to browse button */
+            info.data.main_cont.find('.upcut_browse_btn').click(function(){
+                info._browse_click();
             });
 
-            /* Add Input field 
-            info.data.main_cont.append('<input style="display: none;" class="input_upload" type="file" name="upload" />');*/
         },
-        
-        check_html5: function() {
+        /*************************/
+        /*** Private functions ***/
+        /*************************/
+        _browse_click: function() {
+            var info = this;
+            
+
+        },
+        _add_iframe: function() {
+            var info = this;
+            
+            $('<iframe id="someId"></iframe>').load(function(){
+                $('#someId').contents().find('body').append('<form action="test.php" method="post" enctype="multipart/form-data"><input type="file" name="woot" id="myinput"></form>');
+                var input = $('#someId').contents().find('input[type=file]');
+                console.log(input);
+                input.change(function() {
+                    $(this).parent().submit();
+                });
+            }).appendTo(info.data.main_cont);
+        },
+        /*************************/
+        /*** Misc functions ***/
+        /*************************/
+        _check_html5: function() {
         	var info = this;
         	if (window.FormData) {
 				info.data.html5 = true;
 			} 
-        },
- 
+        }
     };
 
     $.fn.uppercut = function(options) {
