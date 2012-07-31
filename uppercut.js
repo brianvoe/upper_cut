@@ -46,12 +46,24 @@
 			if(true){
 				info.data.main_cont.append('<a class="click_upload" href="javascript:;">Click to upload</a>');
 	            info.data.main_cont.find('.click_upload').click(function(){
-	                info.data.main_cont.find('.input_upload').click();
+	                $('#someId').contents().find('#myinput').click();
 	            });
+	            $('<iframe id="someId" ').load(function(){
+	            	$('#someId').contents().find('body').append('<form action="test.php" method="post" enctype="multipart/form-data"><input type="file" name="woot" id="myinput"></form>');
+	            	var input = $('#someId').contents().find('input[type=file]');
+	            	console.log(input);
+	            	input.change(function() {
+						$(this).parent().submit();
+					});
+	            }).appendTo(info.data.main_cont);
 	            
-				info.data.main_cont.append('<iframe id="cooliframe" src="about:blank"><div class="awesome"></div></iframe>');
+	            
+	            	
+						            
+
+				/*info.data.main_cont.append('<iframe id="cooliframe" src="about:blank"><div class="awesome"></div></iframe>');
 				console.log($('#cooliframe').contents().find('body'));
-				info.data.main_cont.find('#cooliframe').contents().find('.awesome').append('test');
+				info.data.main_cont.find('#cooliframe').contents().find('.awesome').append('test');*/
 			}
 			
 			
