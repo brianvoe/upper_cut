@@ -16,7 +16,8 @@
     /* Datas */
     var data = {
         main_id: null, /* Main container id */
-        main_cont: null /* Main container */
+        main_cont: null, /* Main container */
+        html5: false, /* Do not use html5 by defualt */
     };
 
     var uppercut_funcs = {
@@ -25,10 +26,13 @@
         /************************/
         create: function(options, input) {
             var info = this;
+            
 
             /* Replace default options with requested options */
             info.options = $.extend({}, options, options);
             info.data = $.extend({}, data, {});
+            
+            info.check_html5();
 
             /* Get or set id */
             if ($(input).attr('id')) {
@@ -38,16 +42,36 @@
                 $(input).attr('id', info.data.main_id);
             }
             info.data.main_cont = $(input);
-
-            /* Add buttons */
+			
+			if(true){
+				info.data.main_cont.append('<a class="click_upload" href="javascript:;">Click to upload</a>');
+	            info.data.main_cont.find('.click_upload').click(function(){
+	                info.data.main_cont.find('.input_upload').click();
+	            });
+	            
+				info.data.main_cont.append('<iframe id="cooliframe" src="about:blank"><div class="awesome"></div></iframe>');
+				console.log($('#cooliframe').contents().find('body'));
+				info.data.main_cont.find('#cooliframe').contents().find('.awesome').append('test');
+			}
+			
+			
+            /* Add buttons 
             info.data.main_cont.append('<a class="click_upload" href="javascript:;">Click to upload</a>');
             info.data.main_cont.find('.click_upload').click(function(){
                 info.data.main_cont.find('.input_upload').click();
             });
 
-            /* Add Input field */
-            info.data.main_cont.append('<input style="display: none;" class="input_upload" type="file" name="upload" />');
-        }
+            /* Add Input field 
+            info.data.main_cont.append('<input style="display: none;" class="input_upload" type="file" name="upload" />');*/
+        },
+        
+        check_html5: function() {
+        	var info = this;
+        	if (window.FormData) {
+				info.data.html5 = true;
+			} 
+        },
+ 
     };
 
     $.fn.uppercut = function(options) {
