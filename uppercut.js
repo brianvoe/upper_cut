@@ -55,8 +55,10 @@
             info.data.main_cont.append('<input style="display: none;" class="upcut_input_upload" type="file" name="upload" />');
 
             /* Add change event to upload file. */
-            info.data.main_cont.find('.upcut_input_upload').change(function(){
-                alert(info.data.main_cont.find('.upcut_input_upload').val());
+            info.data.main_cont.find('.upcut_input_upload').change(function(event){
+                console.log(info._get_file_name(this.files[0]));
+                console.log(info._get_file_size(this.files[0]));
+                $(this).val(''); // Clear out input field
             });
 			
             /* Add upload click button */
@@ -102,6 +104,18 @@
         	if (window.FormData) {
 				info.data.html5 = true;
 			} 
+        },
+        _get_file_name: function(file) {
+            return file.name;
+        },
+        _get_file_size: function(file) {
+            var fileSize = 0;
+            if (file.size > 1024 * 1024) {
+                fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+            } else {
+                fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
+            }
+            return fileSize;
         }
     };
 
