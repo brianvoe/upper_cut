@@ -11,12 +11,18 @@
                 $('#image_upload').uppercut({
                     //browse_image: 'http://www.google.com/images/logo.gif'
                 });
+
+                $('.browse_click').click(function(){
+                    $('#image_upload').uppercut('browse_click');
+                });
             });
         </script>
     </head>
     <body>
         <h1>Upper Cut</h1>
         <h2>Convert normal select into a more advanced dropdown.</h2>
+        <a class="browse_click" href="javascript:;">Click to test browse function</a>
+        <br /><br />
         <div id="image_upload"></div>
     </body>
 </html>

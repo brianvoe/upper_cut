@@ -11,8 +11,10 @@
     /* Options */
     var upcut_options = {
         url: false, /* Url of location where upload image will go */
+        auto: true, /* Auto upload upon file select */
         in_dialog_box: true, /* Show uploads and progress in dialog box */
-        max_file_size: 10240, /* Max file size in kb - default 10mb */
+        max_file_size: 10 * (1024 * 1024), /* Max file size in bytes - default 10mb */
+        file_types: ['gif','png','jpg','jpeg'], /* Allowed file upload types */
         /* Image button options - Default css button */
         browse_text: 'Browse', /* Text of default button */
         browse_image: false /* Image location of browse button */
@@ -56,8 +58,9 @@
 
             /* Add change event to upload file. */
             info.data.main_cont.find('.upcut_input_upload').change(function(event){
-                console.log(info._get_file_name(this.files[0]));
-                console.log(info._get_file_size(this.files[0]));
+                if(info._validate_file(this.files[0])){
+                    alert('validation successfull');
+                }
                 $(this).val(''); // Clear out input field
             });
 			
@@ -72,18 +75,18 @@
             
             /* Add click event to browse button */
             info.data.main_cont.find('.upcut_browse_btn').click(function(){
-                info._browse_click();
+                info.browse_click();
             });
 
+        },
+        browse_click: function() {
+            var info = ($.hasData(this) ? $(this).data('uppercut'): this);
+            
+            info.data.main_cont.find('.upcut_input_upload').click();
         },
         /*************************/
         /*** Private functions ***/
         /*************************/
-        _browse_click: function() {
-            var info = this;
-            
-            info.data.main_cont.find('.upcut_input_upload').click();
-        },
         _add_iframe: function() {
             var info = this;
             
@@ -105,17 +108,61 @@
 				info.data.html5 = true;
 			} 
         },
+        _size_in_text: function (bytes) {  
+            var kilobyte = 1024;
+            var megabyte = kilobyte * 1024;
+            var gigabyte = megabyte * 1024;
+            var terabyte = gigabyte * 1024;
+           
+            if ((bytes >= 0) && (bytes < kilobyte)) {
+                return bytes + ' B';
+            } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+                return (bytes / kilobyte).toFixed(2) + ' KB';
+            } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+                return (bytes / megabyte).toFixed(2) + ' MB';
+            } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+                return (bytes / gigabyte).toFixed(2) + ' GB';
+            } else if (bytes >= terabyte) {
+                return (bytes / terabyte).toFixed(2) + ' TB';
+            } else {
+                return bytes + ' B';
+            }
+        },
+        /* Get file info */
         _get_file_name: function(file) {
             return file.name;
         },
-        _get_file_size: function(file) {
-            var fileSize = 0;
-            if (file.size > 1024 * 1024) {
-                fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
-            } else {
-                fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
+        _get_file_type: function(file) {
+            return file.name.split('.').pop().toLowerCase();
+        },
+        /* Validate file functions */
+        _validate_file: function(file) {
+            var info = this;
+            var valid = true;
+            /* Make sure its a valid file type */
+            if(!info._validate_file_type(file)){
+                alert('Invalid file type');
+                valid = false;
             }
-            return fileSize;
+            /* Make sure it doesnt exceed file size */
+            if(!info._validate_file_size(file)) {
+                alert('Exceeded max file size of '+info._size_in_text(info.options.max_file_size));
+                valid = false;
+            }
+            return valid;
+        },
+        _validate_file_type: function(file) {
+            var info = this;
+            var name = file.name;
+            var ext = name.split('.').pop().toLowerCase();
+            if($.inArray(ext, info.options.file_types) == -1) {
+                return false
+            }
+            return true;
+        },
+        _validate_file_size: function(file) {
+            var info = this;
+            return (file.size > info.options.max_file_size ? false: true);
         }
     };
 
@@ -128,10 +175,10 @@
                     uppercut_funcs[options].apply(this, args);
                 }
             } else if (typeof options === 'object' || !options) {
-                if(!$(this).data('uppercut')){
-                        var uppercut_obj = Object.create(uppercut_funcs);
-                        uppercut_obj.create(options, this);
-                        $.data(this, 'uppercut', uppercut_obj);
+                if(!$(this).data('uppercut')) {
+                    var uppercut_obj = Object.create(uppercut_funcs);
+                    uppercut_obj.create(options, this);
+                    $.data(this, 'uppercut', uppercut_obj);
                 }   
             } else {
                 $.error('Method ' +  options + ' does not exist in Super Select');
