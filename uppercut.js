@@ -12,6 +12,7 @@
     var upcut_options = {
         url: false, /* Url of location where upload image will go */
         in_dialog_box: true, /* Show uploads and progress in dialog box */
+        max_file_size: 10240, /* Max file size in kb - default 10mb */
         /* Image button options - Default css button */
         browse_text: 'Browse', /* Text of default button */
         browse_image: false /* Image location of browse button */
@@ -52,6 +53,11 @@
 
             /* Add hidden input file field */
             info.data.main_cont.append('<input style="display: none;" class="upcut_input_upload" type="file" name="upload" />');
+
+            /* Add change event to upload file. */
+            info.data.main_cont.find('.upcut_input_upload').change(function(){
+                alert(info.data.main_cont.find('.upcut_input_upload').val());
+            });
 			
             /* Add upload click button */
             if(info.options.browse_image){
@@ -74,7 +80,7 @@
         _browse_click: function() {
             var info = this;
             
-            alert('browse clicked');
+            info.data.main_cont.find('.upcut_input_upload').click();
         },
         _add_iframe: function() {
             var info = this;
