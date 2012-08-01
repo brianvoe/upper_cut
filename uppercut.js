@@ -9,19 +9,19 @@
 (function($){
 
     /* Options */
-    var options = {
+    var upcut_options = {
         url: false, /* Url of location where upload image will go */
-
-        /* Image button options - Default button or image */
+        in_dialog_box: true, /* Show uploads and progress in dialog box */
+        /* Image button options - Default css button */
         browse_text: 'Browse', /* Text of default button */
         browse_image: false /* Image location of browse button */
     };
 
     /* Datas */
-    var data = {
+    var upcut_data = {
         main_id: null, /* Main container id */
         main_cont: null, /* Main container */
-        html5: false, /* Do not use html5 by defualt */
+        html5: false /* Do not use html5 by defualt */
     };
 
     var uppercut_funcs = {
@@ -32,8 +32,8 @@
             var info = this;
 
             /* Replace default options with requested options */
-            info.options = $.extend({}, options, options);
-            info.data = $.extend({}, data, {});
+            info.options = $.extend({}, upcut_options, options);
+            info.data = $.extend({}, upcut_data, {});
             
             /* Check if html */
             info._check_html5();
@@ -47,6 +47,9 @@
             }
             info.data.main_cont = $(input);
 
+            /* Add class to main container */
+            info.data.main_cont.addClass('upcut_cont');
+
             /* Add hidden input file field */
             info.data.main_cont.append('<input style="display: none;" class="upcut_input_upload" type="file" name="upload" />');
 			
@@ -56,7 +59,7 @@
                 info.data.main_cont.append('<div class="upcut_image_browse upcut_browse_btn"><img src="'+info.options.browse_image+'" /></div>');
             } else {
                 /* Load css style browse button */
-                info.data.main_cont.append('<div class="upcut_css upcut_browse_btn">'+info.options.browse_text+'</div>');
+                info.data.main_cont.append('<div class="upcut_css_browse upcut_browse_btn">'+info.options.browse_text+'</div>');
             }
             
             /* Add click event to browse button */
@@ -71,7 +74,7 @@
         _browse_click: function() {
             var info = this;
             
-
+            alert('browse clicked');
         },
         _add_iframe: function() {
             var info = this;

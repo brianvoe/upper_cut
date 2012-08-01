@@ -8,7 +8,9 @@
         <link href="uppercut.css" rel="stylesheet" type="text/css" />
         <script>
             $(document).ready(function(){
-                $('#image_upload').uppercut();
+                $('#image_upload').uppercut({
+                    browse_image: 'http://www.google.com/images/logo.gif'
+                });
             });
         </script>
     </head>
