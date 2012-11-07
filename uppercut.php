@@ -2,7 +2,7 @@
    	// Options
 	$allowed_types = array('.jpg','.gif','.bmp','.png'); // Allowed file types
 	$max_size = 2097152; // Maximum filesize in bytes (currently 2MB).
-	$upload_path = 'uploads'; // Upload location
+	$upload_path = 'uploads/'; // Upload location - trailing slash
 
 	// Return info
 	$return_info = array('status' => '', 'file' => array('name' => '', 'path' => '', 'size' => '', 'type' => '', 'ext' => ''), 'info' => '');
