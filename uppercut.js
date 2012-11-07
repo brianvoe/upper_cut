@@ -84,7 +84,7 @@
                 info.data.main_cont.append('<input style="display: none;" class="upcut_input_upload" type="file" name="" />');
 
                 /* Add change event to upload file */
-                info.data.main_cont.find('.upcut_input_upload').change(function(event){
+                info.data.main_cont.find('.upcut_input_upload').change(function(){
                     if(info._validate_file(this.files[0])){
                         /* Process html5 image uploading */
                     }
@@ -111,18 +111,30 @@
         _add_iframe: function() {
             var info = this;
             var frame_id = 'uc_'+Math.ceil(Math.random() * 100000);
+            var frame_cont;
             
-            $('<iframe class="upcut_queue_item" id="'+frame_id+'"></iframe>').load(function(){
+            $('<iframe style="display: none;" class="upcut_queue_item" id="'+frame_id+'"></iframe>').load(function(){
                 var form_txt = '<form action="'+info.options.upload_url+'" method="post" enctype="multipart/form-data">';
                 form_txt += '<input style="display: none;" type="file" name="'+info.options.upload_name+'" />';
-                form_txt += '<input style="display: none;" type="file" name="'+info.options.upload_name+'" />';
                 form_txt += '</form>';
-                $('#'+frame_id).contents().find('body').append(form_txt);
+
+                frame_cont = $('#'+frame_id);
+                frame_cont.contents().find('body').append(form_txt);
                 
                 /* Listen out for input field file selection */
-                $('#'+frame_id).contents().find('input[type=file]').change(function() {
+                frame_cont.contents().find('input[type=file]').change(function() {
                     if(info.options.auto_upload) { /* Upload file */
                         $(this).parent().submit();
+
+                        frame_cont.load(function () {
+                            frame_cont.contents().find('body form').remove(); /* Remove form */
+                            var return_info = $.parseJSON(frame_cont.contents().find('body').html());
+                            
+                            /* Take return info and do requested  */
+                            
+
+                            frame_cont.unbind('load');
+                        });
                     } else { /* Queue for later submission */
 
                     }
@@ -130,7 +142,7 @@
             }).appendTo(info.data.main_cont.find('.upcut_queue'));
 
             /* Click input field to select file */
-            $('#'+frame_id).contents().find('input[type=file]').click();
+            frame_cont.contents().find('input[type=file]').click();
         },
         /*************************/
         /*** Misc functions ***/
