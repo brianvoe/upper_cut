@@ -1,37 +1,50 @@
 .upcut_cont {
-	border: solid 1px #a6a6a6;
 	width: 300px;
 	padding: 5px;
+	border: solid 1px #a6a6a6;
+	text-decoration: none;
+	font-size: 14px;
+	font-family: Helvetica, Arial, sans-serif;
 }
-.upcut_cont .upcut_css_browse {
+.upcut_cont .upcut_btn {
 	display: inline-block;
 	outline: none;
 	cursor: pointer;
+	color: #fef4e9;
 	text-align: center;
-	text-decoration: none;
-	font: 14px/100% Arial, Helvetica, sans-serif;
-	padding: .5em 2em .55em;
+	padding: 8px 15px 8px 15px;
+	margin: 0 5px 0 0;
 	text-shadow: 0 1px 1px rgba(0,0,0,.3);
-	-webkit-border-radius: .5em; 
-	-moz-border-radius: .5em;
-	border-radius: .5em;
+	-webkit-border-radius: 5px; 
+	-moz-border-radius: 5px;
+	border-radius: 5px;
 	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.2);
 	-moz-box-shadow: 0 1px 2px rgba(0,0,0,.2);
 	box-shadow: 0 1px 2px rgba(0,0,0,.2);
-	color: #fef4e9;
+}
+.upcut_cont .upcut_btn_browse {
 	border: solid 1px #da7c0c;
 	background: #f78d1d;
 	background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
-	background: -moz-linear-gradient(top,  #faa51a,  #f47a20);
-	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#faa51a', endColorstr='#f47a20');
+	background: -moz-linear-gradient(top, #faa51a, #f47a20);
+}
+.upcut_cont .upcut_btn_upload {
+	border: solid 1px #51a351;
+	background: #5bb75b;
+	background: -webkit-gradient(linear, left top, left bottom, from(#62c462), to(#51a351));
+	background: -moz-linear-gradient(top, #62c462, #51a351);
+}
+.upcut_cont .upcut_btn_clear {
+
+	border: solid 1px #bd362f;
+	background: #ee5f5b;
+	background: -webkit-gradient(linear, left top, left bottom, from(#ee5f5b), to(#bd362f));
+	background: -moz-linear-gradient(top, #ee5f5b, #bd362f);
 }
 .upcut_cont .upcut_image_browse {
 	cursor: pointer;
-}
-
-/* Process */
-.upcut_cont .upcut_progress {
-	
+	text-decoration: none;
+	border: none;
 }
 
 /* Queue */
@@ -39,10 +52,42 @@
 	
 }
 .upcut_cont .upcut_queue_item {
-
+	margin: 5px 0px 10px 0px;
+	padding: 5px 10px 5px 10px;
+	border: solid 1px #999999;
 }
 .upcut_cont .upcut_queue_display {
-
+	padding: 0 0 3px 0;
+	font-size: 12px;
+	color: #555555;
+}
+.upcut_cont .upcut_queue_progress {
+    width: 100%;
+    height: 5px;
+	border: solid 1px #656565;
+    -webkit-border-radius: 3px; 
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+.upcut_cont .upcut_queue_progress .upcut_progress_bar {
+	height: 5px;
+	width: 0%;
+	-webkit-border-radius: 3px; 
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	background-color: #f78d1d;
+	background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
+	background: -moz-linear-gradient(top, #faa51a, #f47a20);
+}
+.upcut_cont .upcut_queue_status {
+	padding: 0 0 3px 0;
+	font-size: 12px;
+}
+.upcut_cont .upcut_queue_status .queue_success {
+	color: green;
+}
+.upcut_cont .upcut_queue_status .queue_error {
+	color: red;
 }
 
 

@@ -13,16 +13,31 @@
                     //browse_image: 'http://www.google.com/images/logo.gif'
                 });
 
+                $('.create_click').click(function(){
+                    $('#image_upload').uppercut({
+                        upload_url: 'uppercut.php'
+                    });
+                });
+                $('.destroy_click').click(function(){
+                    $('#image_upload').uppercut('destroy');
+                });
                 $('.browse_click').click(function(){
-                    $('#image_upload').uppercut('browse_click');
+                    $('#image_upload').uppercut('browse');
+                });
+                $('.clear_click').click(function(){
+                    $('#image_upload').uppercut('clear');
                 });
             });
         </script>
     </head>
     <body>
         <h1>Upper Cut</h1>
-        <h2>Convert normal select into a more advanced dropdown.</h2>
-        <a class="browse_click" href="javascript:;">Click to test browse function</a>
+        <h2>Advanced image upload and crop jquery plugin</h2>
+        <a class="create_click" href="javascript:;">Create</a> - 
+        <a class="destroy_click" href="javascript:;">Destroy</a>
+        <br />
+        <a class="browse_click" href="javascript:;">Browse</a> - 
+        <a class="clear_click" href="javascript:;">Clear</a>
         <br /><br />
         <div id="image_upload"></div>
     </body>

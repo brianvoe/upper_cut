@@ -1,7 +1,7 @@
 <?php
    	// Options
 	$allowed_types = array('.jpg','.gif','.bmp','.png'); // Allowed file types
-	$max_size = 2097152; // Maximum filesize in bytes (currently 2MB).
+	$max_size = /*10 * */(1024 * 1024); // Maximum filesize in bytes (currently 10MB).
 	$upload_path = 'uploads/'; // Upload location - trailing slash
 
 	// Return info
@@ -23,7 +23,7 @@
 	}
 	if(filesize($file_temp) > $max_size) { // Check filesize
 		$return_info['status'] = 'error';
-		$return_info['info'] = 'File size is too large';
+		$return_info['info'] = 'File size is too large. Php is set to 10MB';
 	}
 	if(!is_writable($upload_path)) { // Check upload path
 		$return_info['status'] = 'error';
