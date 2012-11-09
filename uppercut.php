@@ -5,13 +5,15 @@
 	$upload_path = 'uploads/'; // Upload location - trailing slash
 
 	// Return info
-	$return_info = array('status' => '', 'file' => array('name' => '', 'path' => '', 'size' => '', 'type' => '', 'ext' => ''), 'info' => '');
+	$return_info = array('status' => '', 'file' => array('name' => '', 'path' => '', 'size' => '', 'height' => '', 'width' => '', 'type' => '', 'ext' => ''), 'info' => '');
 
 	// File Info
 	$name = 'uc_image';
 	$file_name = $_FILES[$name]['name'];
 	$file_temp = $_FILES[$name]['tmp_name'];
 	$file_size = $_FILES[$name]['size'];
+	$file_height = 0;
+	$file_width = 0;
 	$file_type = $_FILES[$name]['type'];
 	$file_path = $upload_path.$file_name;
 	$file_ext = substr($file_name, strpos($file_name,'.'), strlen($file_name)-1);
@@ -34,11 +36,16 @@
 	if($return_info['status'] != 'error') {
 		move_uploaded_file($file_temp, $file_path);
 
+		// Get file height and width
+		list($file_width, $file_height, $type, $attr) = getimagesize($file_path);
+
 		$return_info['status'] = 'success';
 		$return_info['file'] = array(
 			'name' => $file_name,
 			'path' => $file_path,
 			'size' => $file_size,
+			'height' => $file_height,
+			'width' => $file_width,
 			'type' => $file_type,
 			'ext' => $file_ext
 		);

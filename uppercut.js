@@ -15,8 +15,10 @@
         crop_url: false, /* Url of location where to send crop parameters */
         /* Preferences */
         multiple: false, /* Whether or not its multiple select - If not html5 compatible it will be set to false */
-        crop: true, /* Whether or not to crop image after upload - If true, multiple will be set to false */
         uploaded_browse: true, /* Once single image is uploaded use recently uploaded image as clickable browse and hide original browse button */
+        /* Crop */
+        crop: true, /* Whether or not to crop image after upload - If true, multiple will be set to false */
+        crop_title: 'Crop Image', /* Title of crop dialog box show at top of crop box */
         /* Buttons */
         upload_button: true, /* Whether or not to show upload button for processing queue */
         upload_button_text: 'Upload', /* Text for upload button */
@@ -83,6 +85,11 @@
 
             /* Add div for queue purposes */
             info.data.main_cont.append('<div class="upcut_queue"></div>');
+
+            /* If crop add crop div */
+            if(info.options.crop) {
+                info.data.main_cont.append('<div class="upcut_crop"></div>');
+            }
 
             /* Add upload click button */
             if(info.options.browse_image){
@@ -222,6 +229,68 @@
                 // Animation complete
             });
         },
+        /**********************/
+        /*** Crop functions ***/
+        /**********************/
+        _crop_start: function(image) {
+            var info = this;
+            var image_id = info._unique_id();
+            var cont_padding = 50;
+            var title_height = 0;
+            var img_width = 0;
+            var img_height = 0;
+            var cont_width = 0;
+            var cont_height = 0;
+
+            /* Add crop container */
+            var crop_cont = '';
+            crop_cont += '<div class="uc_crop_overlay">';
+            crop_cont += '  <div class="uc_crop_cont">'
+            crop_cont += '      <div class="uc_crop_title">'+info.options.crop_title+'</div>';
+            crop_cont += '      <div class="uc_crop_img"><img id="'+image_id+'" src="'+image.file.path+'" /></div>'; /* Add Image */
+            crop_cont += '      <div class="uc_crop_desc">';
+            crop_cont += '          <div class="uc_crop_preview"></div>';
+            crop_cont += '          <div class="uc_crop_img_info"></div>';
+            crop_cont += '      </div>';
+            crop_cont += '  </div>';
+            crop_cont += '</div>'
+            info.data.main_cont.find('.upcut_crop').html(crop_cont);
+
+            /* Set height width variables - based upon fitting window size */
+            title_height = info.data.main_cont.find('.uc_crop_overlay .uc_crop_title').height();
+            desc_width = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc').width();
+            img_width = (image.file.width + desc_width > $(window).width() ? $(window).width() - desc_width: image.file.width);
+            img_height = (image.file.height + title_height > $(window).height() ? $(window).height() - title_height: image.file.height);
+            cont_width = img_width + desc_width - cont_padding;
+            cont_height = img_height + title_height - cont_padding;
+
+            /* Set image height width */
+            info.data.main_cont.find('.uc_crop_overlay .uc_crop_img img').width(img_width - cont_padding);
+            info.data.main_cont.find('.uc_crop_overlay .uc_crop_img img').height(img_height - cont_padding);
+
+            /* Center crop container */
+            info.data.main_cont.find('.upcut_crop .uc_crop_cont').css({
+                width: cont_width + 'px',
+                height: cont_height + 'px'
+            });
+            
+            /* Add jcrop */
+            info.data.main_cont.find('#'+image_id).Jcrop({
+                //onChange: updatecoords,
+                //onSelect: updatecoords,
+                setSelect: [(image.file.width / 2 - 100),(image.file.height / 2 - 100),(image.file.width / 2 + 100),(image.file.height / 2 + 100)],
+                boxHeight: $(window).height() - 115,
+                trueSize: [image.file.width,image.file.height],
+                bgOpacity: .4
+            },function(){
+                // jcrop_api = this;
+            });
+        },
+        _crop_remove: function() {
+            var info = this;
+
+            
+        },
         /***********************/
         /*** Html5 functions ***/
         /***********************/
@@ -248,6 +317,13 @@
                     info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_error">'+return_info.info+'</div>');
                 } else { /* Success */
                     info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_success">Sucess!</div>');
+
+                    /* Add input field to list */
+
+                    /* If crop add image and initiate jcrop */
+                    if(info.options.crop) {
+                        info._crop_start(return_info);
+                    }
                 }
             });
 
