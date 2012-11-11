@@ -19,6 +19,7 @@
         /* Crop */
         crop: true, /* Whether or not to crop image after upload - If true, multiple will be set to false */
         crop_title: 'Crop Image', /* Title of crop dialog box show at top of crop box */
+        crop_square: false, /* Whether or not to keep square 1 by 1 aspect ratio */
         /* Buttons */
         upload_button: true, /* Whether or not to show upload button for processing queue */
         upload_button_text: 'Upload', /* Text for upload button */
@@ -235,61 +236,123 @@
         _crop_start: function(image) {
             var info = this;
             var image_id = info._unique_id();
+            var title_height;
             var cont_padding = 50;
-            var title_height = 0;
-            var img_width = 0;
-            var img_height = 0;
-            var cont_width = 0;
-            var cont_height = 0;
+            var window_width = $(window).width();
+            var window_height = $(window).height();
+            var img_ratio, img_width, img_height, cont_width, cont_height;
 
             /* Add crop container */
             var crop_cont = '';
             crop_cont += '<div class="uc_crop_overlay">';
             crop_cont += '  <div class="uc_crop_cont">'
-            crop_cont += '      <div class="uc_crop_title">'+info.options.crop_title+'</div>';
+            crop_cont += '      <div class="uc_crop_title">'+info.options.crop_title+'<div class="uc_crop_close">X</div></div>';
             crop_cont += '      <div class="uc_crop_img"><img id="'+image_id+'" src="'+image.file.path+'" /></div>'; /* Add Image */
             crop_cont += '      <div class="uc_crop_desc">';
-            crop_cont += '          <div class="uc_crop_preview"></div>';
-            crop_cont += '          <div class="uc_crop_img_info"></div>';
+            crop_cont += '          <div class="uc_crop_preview"><div><img src="'+image.file.path+'" /></div></div>'; /* Crop preview */
+            crop_cont += '          <div class="uc_crop_img_info">Image Info Here</div>';
             crop_cont += '      </div>';
             crop_cont += '  </div>';
-            crop_cont += '</div>'
+            crop_cont += '</div>';
             info.data.main_cont.find('.upcut_crop').html(crop_cont);
 
             /* Set height width variables - based upon fitting window size */
-            title_height = info.data.main_cont.find('.uc_crop_overlay .uc_crop_title').height();
-            desc_width = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc').width();
-            img_width = (image.file.width + desc_width > $(window).width() ? $(window).width() - desc_width: image.file.width);
-            img_height = (image.file.height + title_height > $(window).height() ? $(window).height() - title_height: image.file.height);
-            cont_width = img_width + desc_width - cont_padding;
-            cont_height = img_height + title_height - cont_padding;
+            desc_width = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc').outerWidth(true);
+            title_height = info.data.main_cont.find('.uc_crop_overlay .uc_crop_title').outerHeight(true);
 
-            /* Set image height width */
-            info.data.main_cont.find('.uc_crop_overlay .uc_crop_img img').width(img_width - cont_padding);
-            info.data.main_cont.find('.uc_crop_overlay .uc_crop_img img').height(img_height - cont_padding);
+            /* Get aspect ratio */
+            if(image.file.width > image.file.height) {
+                img_ratio = image.file.height / image.file.width;
+                img_width = (image.file.width + desc_width + cont_padding > window_width ? window_width - desc_width - cont_padding : image.file.width);
+                img_height = img_width * img_ratio;
+                if(img_height + title_height + cont_padding > window_height) {
+                    img_height = (image.file.height + title_height + cont_padding > window_height ? window_height - title_height - cont_padding : image.file.height);
+                    img_width = img_height / img_ratio;
+                }
+            } else {
+                img_ratio = image.file.width / image.file.height;
+                img_height = (image.file.height + title_height + cont_padding > window_height ? window_height - title_height - cont_padding : image.file.height);
+                img_width = img_height * img_ratio;
+                if(img_width + desc_width + cont_padding > window_width) {
+                    img_width = (image.file.width + desc_width + cont_padding > window_width ? window_width - desc_width - cont_padding : image.file.width);
+                    img_height = img_width / img_ratio;
+                }
+            }
 
-            /* Center crop container */
+            /* Set image size */
+            info.data.main_cont.find('.upcut_crop .uc_crop_cont .uc_crop_img img').css({
+                width: img_width + 'px',
+                height: img_height + 'px'
+            });
+
+            /* Set container size */
+            cont_width = img_width + desc_width + 1; /* Minor fix, had issue with desc being dropped under img */
+            cont_height = img_height + title_height;
             info.data.main_cont.find('.upcut_crop .uc_crop_cont').css({
                 width: cont_width + 'px',
                 height: cont_height + 'px'
             });
+
+            /* Add event listener for close */
+            info.data.main_cont.find('.uc_crop_overlay .uc_crop_close').click(function(){
+                info._crop_remove();
+            });
             
             /* Add jcrop */
             info.data.main_cont.find('#'+image_id).Jcrop({
-                //onChange: updatecoords,
-                //onSelect: updatecoords,
-                setSelect: [(image.file.width / 2 - 100),(image.file.height / 2 - 100),(image.file.width / 2 + 100),(image.file.height / 2 + 100)],
-                boxHeight: $(window).height() - 115,
-                trueSize: [image.file.width,image.file.height],
+                onChange: crop_preview,
+                onSelect: crop_preview,
+                aspectRatio: (info.options.crop_square ? 1 : 0),
+                //setSelect: [(image.file.width / 2 - 100),(image.file.height / 2 - 100),(image.file.width / 2 + 100),(image.file.height / 2 + 100)],
+                //boxWidth: img_width,
+                //boxHeight: img_height,
+                trueSize: [image.file.width,image.file.height], /* Actual size of original image */
                 bgOpacity: .4
             },function(){
-                // jcrop_api = this;
+                this.data = info.data; /* Add data to jcrop so we can grab data in _crop_preview function */
             });
+
+            /* Setup preview box */
+            var preview_cont = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .uc_crop_preview');
+            var preview_div = preview_cont.find('div');
+            var preview_img = preview_div.find('img');
+            var preview_max_width = preview_cont.width();
+            var preview_max_height = preview_cont.height();
+            function crop_preview(coords) {
+                /* If no coords then return */
+                if (parseInt(coords.w) <= 0 || parseInt(coords.h) <= 0) return;
+
+                /* Set crop coordinates */
+                // $('#x').val(coords.x);
+                // $('#y').val(coords.y);
+                // $('#w').val(coords.w);
+                // $('#h').val(coords.h);
+                
+                /* Set ratios and scales */
+                var crop_ratio = (coords.w / coords.h);
+                var inner_width = crop_ratio >= (preview_max_width / preview_max_height) ? preview_max_width : preview_max_height * crop_ratio;
+                var inner_height = crop_ratio < (preview_max_width / preview_max_height) ? preview_max_height : preview_max_width / crop_ratio;
+                var scalex = inner_width / coords.w;
+                var scaley = inner_height / coords.h;
+                preview_div.css({ /* Style preview div */
+                    width: Math.ceil(inner_width) + 'px',
+                    height: Math.ceil(inner_height) + 'px',
+                    marginTop: (preview_max_height - inner_height) / 2 + 'px',
+                    marginLeft: (preview_max_width - inner_width) / 2 + 'px',
+                    overflow: 'hidden'
+                });
+                preview_img.css({ /* Style preview image */
+                    width: Math.round(scalex * image.file.width) + 'px', /* Grab original image width */
+                    height: Math.round(scaley * image.file.height) + 'px', /* Grab original image height */
+                    marginLeft: '-' + Math.round(scalex * coords.x) + 'px',
+                    marginTop: '-' + Math.round(scaley * coords.y) + 'px'
+                });
+            }
         },
         _crop_remove: function() {
             var info = this;
 
-            
+            info.data.main_cont.find('.uc_crop_overlay').remove();
         },
         /***********************/
         /*** Html5 functions ***/
@@ -422,7 +485,7 @@
             return file.name;
         },
         _get_file_type: function(file) {
-            return file.name.split('.').pop().toLowerCase();
+            return file.name.substr(file.name.lastIndexOf('.')+1);
         },
         /* Validate file functions */
         _validate_file: function(file) {
@@ -478,9 +541,9 @@
 })(jQuery);
 
 /* IE 8, 7 Compatibility */
-if ( typeof Object.create !== 'function' ) {
-    Object.create = function( obj ) {
-        function F() {};
+if(typeof Object.create !== 'function'){
+    Object.create = function(obj) {
+        function F(){};
         F.prototype = obj;
         return new F();
     };
