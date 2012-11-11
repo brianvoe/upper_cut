@@ -188,6 +188,11 @@
         /****************************************/
         /*** Display and Processing functions ***/
         /****************************************/
+        _add_image_input: function(file_info) {
+            var info = this;
+
+            info.data.main_cont.find('.upcut_inputs').append('<input type="hidden" name="'+info.options.upload_name+'" value="'+file_info.path+'" />');
+        },
         _add_to_queue: function() {
             var info = this;
             var queue_id = info._unique_id();
@@ -221,6 +226,14 @@
 
             return;
         },
+        _remove_queue_item: function(queue_id) {
+            var info = this;
+            setTimeout(function(){
+                info.data.main_cont.find('.upcut_queue #'+queue_id).slideUp('slow', function() {
+                    this.remove();
+                });
+            }, 3000);
+        },
         _animate_progress: function(queue_id, speed, percent) {
             var info = this;
 
@@ -241,6 +254,7 @@
             var window_width = $(window).width();
             var window_height = $(window).height();
             var img_ratio, img_width, img_height, cont_width, cont_height;
+            var crop_coords;
 
             /* Add crop container */
             var crop_cont = '';
@@ -250,7 +264,9 @@
             crop_cont += '      <div class="uc_crop_img"><img id="'+image_id+'" src="'+image.file.path+'" /></div>'; /* Add Image */
             crop_cont += '      <div class="uc_crop_desc">';
             crop_cont += '          <div class="uc_crop_preview"><div><img src="'+image.file.path+'" /></div></div>'; /* Crop preview */
-            crop_cont += '          <div class="uc_crop_img_info">Image Info Here</div>';
+            crop_cont += '          <div class="uc_crop_preview_text">Preview</div>';
+            crop_cont += '          <div class="upcut_btn upcut_btn_crop">Submit Crop</div>';
+            crop_cont += '          <div class="uc_crop_img_info"></div>';
             crop_cont += '      </div>';
             crop_cont += '  </div>';
             crop_cont += '</div>';
@@ -303,13 +319,11 @@
                 onChange: crop_preview,
                 onSelect: crop_preview,
                 aspectRatio: (info.options.crop_square ? 1 : 0),
-                //setSelect: [(image.file.width / 2 - 100),(image.file.height / 2 - 100),(image.file.width / 2 + 100),(image.file.height / 2 + 100)],
-                //boxWidth: img_width,
-                //boxHeight: img_height,
+                setSelect: [(image.file.width / 2 - 100),(image.file.height / 2 - 100),(image.file.width / 2 + 100),(image.file.height / 2 + 100)],
                 trueSize: [image.file.width,image.file.height], /* Actual size of original image */
                 bgOpacity: .4
             },function(){
-                this.data = info.data; /* Add data to jcrop so we can grab data in _crop_preview function */
+                /* var jcrop = this; */
             });
 
             /* Setup preview box */
@@ -323,10 +337,7 @@
                 if (parseInt(coords.w) <= 0 || parseInt(coords.h) <= 0) return;
 
                 /* Set crop coordinates */
-                // $('#x').val(coords.x);
-                // $('#y').val(coords.y);
-                // $('#w').val(coords.w);
-                // $('#h').val(coords.h);
+                crop_coords = coords;
                 
                 /* Set ratios and scales */
                 var crop_ratio = (coords.w / coords.h);
@@ -348,6 +359,11 @@
                     marginTop: '-' + Math.round(scaley * coords.y) + 'px'
                 });
             }
+
+            /* Add event listener for crop submit */
+            info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_btn_crop').click(function() {
+                alert('You clicky');
+            });
         },
         _crop_remove: function() {
             var info = this;
@@ -381,11 +397,15 @@
                 } else { /* Success */
                     info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_success">Sucess!</div>');
 
-                    /* Add input field to list */
+                    /* Remove queue display */
+                    info._remove_queue_item(queue_id);
 
                     /* If crop add image and initiate jcrop */
                     if(info.options.crop) {
                         info._crop_start(return_info);
+                    } else {
+                        /* If no crop finalize upload and add hidden input field to final div location */
+                        info._add_image_input(return_info.file);
                     }
                 }
             });
