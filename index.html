@@ -9,13 +9,14 @@
         <script>
             $(document).ready(function(){
                 $('#image_upload').uppercut({
-                    upload_url: 'uppercut.php'
+                    upload_url: 'uppercut_upload.php',
+                    crop_url: 'uppercut_crop.php'
                     //browse_image: 'http://www.google.com/images/logo.gif'
                 });
 
                 $('.create_click').click(function(){
                     $('#image_upload').uppercut({
-                        upload_url: 'uppercut.php'
+                        upload_url: 'uppercut_upload.php'
                     });
                 });
                 $('.destroy_click').click(function(){

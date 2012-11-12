@@ -13,30 +13,41 @@
         /* Paths */
         upload_url: false, /* Url of location where upload image will go */
         crop_url: false, /* Url of location where to send crop parameters */
+
+        /* Naming */
+        upload_name: 'uc_image', /* Name of input field, will use this for post grabbing */
+
         /* Preferences */
-        multiple: false, /* Whether or not its multiple select - If not html5 compatible it will be set to false */
+        auto_upload: true, /* Auto upload upon file select */
         uploaded_browse: true, /* Once single image is uploaded use recently uploaded image as clickable browse and hide original browse button */
+        multiple: true, /* Whether or not its multiple select - If not html5 compatible it will be set to false */
+
+        /* Images */
+        images_after_upload: true, /* Show images after upload and/or cropping */
+        images_width: 100, /* Images width */
+        images_height: 100, /* Images height */
+
         /* Crop */
         crop: true, /* Whether or not to crop image after upload - If true, multiple will be set to false */
         crop_title: 'Crop Image', /* Title of crop dialog box show at top of crop box */
         crop_square: false, /* Whether or not to keep square 1 by 1 aspect ratio */
+
         /* Buttons */
         upload_button: true, /* Whether or not to show upload button for processing queue */
         upload_button_text: 'Upload', /* Text for upload button */
         clear_button: true, /* Whether or not to show clear button */
         clear_button_text: 'Clear', /* Text for clear button */
-        /* Naming */
-        upload_name: 'uc_image', /* Name of input field, will use this for post grabbing */
+
+        /* Browse button options */
+        browse_text: 'Browse', /* Text of default button */
+        browse_image: false, /* Image location of browse button */
+
+        /* Display Progress */
         name_char_limit: 20, /* Character limit of display name */
-        /* Style preference */
-        auto_upload: true, /* Auto upload upon file select */
-        in_dialog_box: true, /* Show uploads and progress in dialog box */
+
         /* Validations */
         max_file_size: 10 * (1024 * 1024), /* Max file size in bytes - default 10mb */
-        file_types: ['gif','png','jpg','jpeg'], /* Allowed file upload types */
-        /* Image button options - Default css button */
-        browse_text: 'Browse', /* Text of default button */
-        browse_image: false /* Image location of browse button */
+        file_types: ['gif','png','jpg','jpeg'] /* Allowed file upload types */
     };
 
     /* Datas */
@@ -44,6 +55,7 @@
         main_id: null, /* Main container id */
         main_cont: null, /* Main container */
         html5: false, /* Do not use html5 by defualt */
+        errors: {}, /* Associative array list errors */
         queue: [] /* Array for storing queued items */
     };
 
@@ -83,6 +95,9 @@
 
             /* Add div for holding hidden input fields */
             info.data.main_cont.append('<div class="upcut_inputs"></div>');
+
+            /* Add div for holding hidden input fields */
+            info.data.main_cont.append('<div class="upcut_images"></div>');
 
             /* Add div for queue purposes */
             info.data.main_cont.append('<div class="upcut_queue"></div>');
@@ -170,6 +185,9 @@
             /* Clear input fields */
             info.data.main_cont.find('.upcut_inputs').html('');
 
+            /* Clear images */
+            info.data.main_cont.find('.upcut_images').html('');
+
             /* Clear out queue */
             info.data.main_cont.find('.upcut_queue .upcut_queue_item').remove();
         },
@@ -192,6 +210,11 @@
             var info = this;
 
             info.data.main_cont.find('.upcut_inputs').append('<input type="hidden" name="'+info.options.upload_name+'" value="'+file_info.path+'" />');
+        },
+        _add_image_thumbnail: function(file_info) {
+            var info = this;
+
+            info.data.main_cont.find('.upcut_images').append('<img style="max-width: '+info.options.images_width+'px; max-height: '+info.options.images_height+'px;" src="'+file_info.path+'" />');
         },
         _add_to_queue: function() {
             var info = this;
@@ -230,7 +253,7 @@
             var info = this;
             setTimeout(function(){
                 info.data.main_cont.find('.upcut_queue #'+queue_id).slideUp('slow', function() {
-                    this.remove();
+                    $(this).remove();
                 });
             }, 3000);
         },
@@ -249,7 +272,7 @@
         _crop_start: function(image) {
             var info = this;
             var image_id = info._unique_id();
-            var title_height;
+            var desc_width, desc_height, title_height;
             var cont_padding = 50;
             var window_width = $(window).width();
             var window_height = $(window).height();
@@ -274,6 +297,7 @@
 
             /* Set height width variables - based upon fitting window size */
             desc_width = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc').outerWidth(true);
+            desc_height = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc').outerHeight(true);
             title_height = info.data.main_cont.find('.uc_crop_overlay .uc_crop_title').outerHeight(true);
 
             /* Get aspect ratio */
@@ -303,7 +327,7 @@
 
             /* Set container size */
             cont_width = img_width + desc_width + 1; /* Minor fix, had issue with desc being dropped under img */
-            cont_height = img_height + title_height;
+            cont_height = (img_height <= desc_height ? desc_height + title_height : img_height + title_height);
             info.data.main_cont.find('.upcut_crop .uc_crop_cont').css({
                 width: cont_width + 'px',
                 height: cont_height + 'px'
@@ -362,8 +386,39 @@
 
             /* Add event listener for crop submit */
             info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_btn_crop').click(function() {
-                alert('You clicky');
+                info._crop_submit(image, crop_coords);
             });
+        },
+        _crop_submit: function(image_info, coords) {
+            var info = this;
+
+            if(info.options.crop_url) {
+                $.ajax({
+                    type: 'POST',
+                    url: info.options.crop_url,
+                    data: 'image_path='+image_info.file.path+'&image_name='+image_info.file.name+'&x='+coords.x+'&y='+coords.y+'&w='+coords.w+'&h='+coords.h,
+                    success: function(results){
+                        results = $.parseJSON(results);
+                        if(results.status == 'success') {
+                            /* Add input field */
+                            info._add_image_input(results.file);
+
+                            /* Add thumbnail */
+                            if(info.options.images_after_upload) {
+                                info._add_image_thumbnail(results.file);
+                            }
+
+                            /* Close and remove crop */
+                            info._crop_remove();
+                        } else {
+                            info.data.errors.crop_submit = results.info;
+                        }
+                    }
+                });
+            } else {
+                /* Crop url was not set */
+                info.data.errors.crop_submit = 'Crop url was not set';
+            }
         },
         _crop_remove: function() {
             var info = this;
@@ -380,6 +435,7 @@
         _start_iframe_upload: function(file_info, frame_id, queue_id) {
             var info = this;
             var frame_cont = $('#'+frame_id);
+            var return_info;
 
             frame_cont.contents().find('body form').submit();
 
@@ -387,7 +443,7 @@
 
             frame_cont.load(function () {
                 frame_cont.contents().find('body form').remove(); /* Remove form */
-                var return_info = $.parseJSON(frame_cont.contents().find('body').html());
+                return_info = $.parseJSON(frame_cont.contents().find('body').html());
                 frame_cont.unbind('load');
                 frame_cont.remove(); /* Delete iframe */
                 

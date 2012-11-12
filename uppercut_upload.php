@@ -5,7 +5,18 @@
 	$upload_path = 'uploads/'; // Upload location - trailing slash
 
 	// Return info
-	$return_info = array('status' => '', 'file' => array('name' => '', 'path' => '', 'size' => '', 'height' => '', 'width' => '', 'type' => '', 'ext' => ''), 'info' => '');
+	$return_info = array(
+		'status' => '', 
+		'file' => array(
+			'name' => '', 
+			'path' => '', 
+			'size' => '', 
+			'height' => '', 
+			'width' => '', 
+			'type' => ''
+		), 
+		'info' => ''
+	);
 
 	// File Info
 	$name = 'uc_image';
@@ -16,13 +27,12 @@
 	$file_width = 0;
 	$file_type = $_FILES[$name]['type'];
 	$file_path = $upload_path.$file_name;
-	// $file_ext = substr($file_name, strpos($file_name,'.'), strlen($file_name)-1); // old way
-	$file_ext = explode('/', $file_type)[1];// substr($file_type, strpos($file_type,'/'), strlen($file_type)-1);
+	$file_ext = explode('/', $file_type)[1];
 
 	// Validate
 	if(!in_array($file_ext, $allowed_types)) { // Check file types
 		$return_info['status'] = 'error';
-		$return_info['info'] = 'File type is not allowed '.$file_ext;
+		$return_info['info'] = 'File type is not allowed';
 	}
 	if(filesize($file_temp) > $max_size) { // Check filesize
 		$return_info['status'] = 'error';
@@ -40,6 +50,9 @@
 			$return_info['status'] = 'error';
 			$return_info['info'] = 'There was a problem moving image.';
 		} else {
+			// Set permissions
+			chmod($file_path, 0777);
+
 			// Get file height and width
 			list($file_width, $file_height, $type, $attr) = getimagesize($file_path);
 
@@ -50,8 +63,7 @@
 				'size' => $file_size,
 				'height' => $file_height,
 				'width' => $file_width,
-				'type' => $file_type,
-				'ext' => $file_ext
+				'type' => $file_type
 			);
 			$return_info['info'] = '';
 		}
