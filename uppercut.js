@@ -24,8 +24,10 @@
 
         /* Images */
         images_after_upload: true, /* Show images after upload and/or cropping */
-        images_width: 100, /* Images width */
-        images_height: 100, /* Images height */
+        images_width: 75, /* Images width */
+        images_height: 75, /* Images height */
+        images_edit_val: '\\', /* Value of edit button */
+        images_delete_val: 'X', /* Value of delete button */
 
         /* Crop */
         crop: true, /* Whether or not to crop image after upload - If true, multiple will be set to false */
@@ -38,7 +40,7 @@
         clear_button: true, /* Whether or not to show clear button */
         clear_button_text: 'Clear', /* Text for clear button */
 
-        /* Browse button options */
+        /* Browse button */
         browse_text: 'Browse', /* Text of default button */
         browse_image: false, /* Image location of browse button */
 
@@ -73,11 +75,6 @@
             /* Check if html5 */
             //info._check_html5();
 
-            /* If crop make sure multiple is false */
-            if(info.options.crop) {
-                info.options.multiple = false;
-            }
-
             /* Get or set id */
             if ($(input).attr('id')) {
                 info.data.main_id = $(input).attr('id');
@@ -96,11 +93,11 @@
             /* Add div for holding hidden input fields */
             info.data.main_cont.append('<div class="upcut_inputs"></div>');
 
-            /* Add div for holding hidden input fields */
-            info.data.main_cont.append('<div class="upcut_images"></div>');
-
             /* Add div for queue purposes */
             info.data.main_cont.append('<div class="upcut_queue"></div>');
+
+            /* Add div for holding hidden input fields */
+            info.data.main_cont.append('<div class="upcut_images"></div>');
 
             /* If crop add crop div */
             if(info.options.crop) {
@@ -213,8 +210,28 @@
         },
         _add_image_thumbnail: function(file_info) {
             var info = this;
+            var thumb_id = info._unique_id();
 
-            info.data.main_cont.find('.upcut_images').append('<img style="max-width: '+info.options.images_width+'px; max-height: '+info.options.images_height+'px;" src="'+file_info.path+'" />');
+            /* Put together thumb div */
+            var image_thumb = '';
+            image_thumb += '<div id="'+thumb_id+'" class="upcut_thumb">';
+            image_thumb += '    <div class="upcut_thumb_img"><img style="max-width: '+info.options.images_width+'px; max-height: '+info.options.images_height+'px;" src="'+file_info.path+'" /></div>';
+            image_thumb += '    <div class="upcut_thumb_tools">';
+            image_thumb += '        <div class="upcut_thumb_edit">'+info.options.images_edit_val+'</div>';
+            image_thumb += '        <div class="upcut_thumb_delete">'+info.options.images_delete_val+'</div>';
+            image_thumb += '    </div>';
+            image_thumb += '</div>';
+            info.data.main_cont.find('.upcut_images').append(image_thumb);
+
+            /* Add event listener for edit */
+            info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_edit').click(function(){
+                alert('edit thumb');
+            });
+
+            /* Add event listener for delete */
+            info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_delete').click(function(){
+                alert('delete thumb');
+            });
         },
         _add_to_queue: function() {
             var info = this;
@@ -288,7 +305,8 @@
             crop_cont += '      <div class="uc_crop_desc">';
             crop_cont += '          <div class="uc_crop_preview"><div><img src="'+image.file.path+'" /></div></div>'; /* Crop preview */
             crop_cont += '          <div class="uc_crop_preview_text">Preview</div>';
-            crop_cont += '          <div class="upcut_btn upcut_btn_crop">Submit Crop</div>';
+            crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_none">Do Not Crop</div>';
+            crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_submit">Submit Crop</div>';
             crop_cont += '          <div class="uc_crop_img_info"></div>';
             crop_cont += '      </div>';
             crop_cont += '  </div>';
@@ -297,7 +315,7 @@
 
             /* Set height width variables - based upon fitting window size */
             desc_width = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc').outerWidth(true);
-            desc_height = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc').outerHeight(true);
+            desc_height = info.data.main_cont.find('.images_edit_valuc_crop_overlay .uc_crop_desc').outerHeight(true);
             title_height = info.data.main_cont.find('.uc_crop_overlay .uc_crop_title').outerHeight(true);
 
             /* Get aspect ratio */
@@ -384,8 +402,22 @@
                 });
             }
 
+            /* Add event listener for not needing to crop */
+            info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_crop_none').click(function() {
+                /* Add input field */
+                info._add_image_input(image.file);
+
+                /* Add thumbnail */
+                if(info.options.images_after_upload) {
+                    info._add_image_thumbnail(image.file);
+                }
+
+                /* Close and remove crop */
+                info._crop_remove();
+            });
+
             /* Add event listener for crop submit */
-            info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_btn_crop').click(function() {
+            info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_crop_submit').click(function() {
                 info._crop_submit(image, crop_coords);
             });
         },

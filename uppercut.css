@@ -41,7 +41,7 @@
 	background: -moz-linear-gradient(top, #ee5f5b, #bd362f);
 }
 .upcut_cont .upcut_btn_crop {
-	width: 90%;
+	display: inline-block;
 	margin: 10px auto 10px auto;
 	border: solid 1px #525154;
 	background: #807F83;
@@ -52,6 +52,30 @@
 	cursor: pointer;
 	text-decoration: none;
 	border: none;
+}
+
+/* Images - thumbnails */
+.upcut_cont .upcut_images {
+	margin: 0;
+	padding: 0;
+}
+.upcut_cont .upcut_images .upcut_thumb {
+	display: inline-block;
+	padding: 3px;
+	margin: 10px 5px 0 0;
+}
+.upcut_cont .upcut_images .upcut_thumb .upcut_thumb_tools {
+
+}
+.upcut_cont .upcut_images .upcut_thumb .upcut_thumb_tools div {
+	display: inline-block;
+	cursor: pointer;
+}
+.upcut_cont .upcut_images .upcut_thumb .upcut_thumb_tools .upcut_thumb_edit {
+	color: orange;
+}
+.upcut_cont .upcut_images .upcut_thumb .upcut_thumb_tools .upcut_thumb_delete {
+	color: red;
 }
 
 /* Queue */
