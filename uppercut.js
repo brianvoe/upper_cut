@@ -26,8 +26,8 @@
         images_after_upload: true, /* Show images after upload and/or cropping */
         images_width: 75, /* Images width */
         images_height: 75, /* Images height */
-        images_edit_val: '\\', /* Value of edit button */
-        images_delete_val: 'X', /* Value of delete button */
+        images_edit_val: '\\', /* Value of edit button - false if dont want to show edit button */
+        images_delete_val: 'X', /* Value of delete button - false if dont want to show delete button */
 
         /* Crop */
         crop: true, /* Whether or not to crop image after upload - If true, multiple will be set to false */
@@ -58,7 +58,7 @@
         main_cont: null, /* Main container */
         html5: false, /* Do not use html5 by defualt */
         errors: {}, /* Associative array list errors */
-        queue: [] /* Array for storing queued items */
+        items: {} /* Array for storing items */
     };
 
     var uppercut_funcs = {
@@ -161,10 +161,13 @@
         browse: function() {
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
 
+            /* Start new item identification */
+            var item_id = info._add_new_data_item();
+
             if(info.data.html5) { /* html5 */
                 info.data.main_cont.find('.upcut_input_upload').click();
             } else { /* Old school */
-                info._add_iframe();
+                info._add_iframe(item_id);
             }
         },
         upload: function() {
@@ -200,15 +203,57 @@
             /* Destroy Data */
             $.removeData(this, 'uppercut');
         },
-        /****************************************/
-        /*** Display and Processing functions ***/
-        /****************************************/
-        _add_image_input: function(file_info) {
+        /***************************/
+        /*** Data item functions ***/
+        /***************************/
+        _add_new_data_item: function() {
+            var info = this;
+            var data_num;
+
+            while(typeof info.data.items[data_num] == 'undefined') {
+                data_num = Math.ceil(Math.random() * 100000);
+
+                /* Set variables */
+                info.data.items[data_num] = {
+                    frame_id: false,
+                    queue_id: false,
+                    input_id: false,
+                    input_val: false,
+                    image_id: false,
+                    orig_image: {
+                        name: false,
+                        path: false,
+                        size: false,
+                        height: false,
+                        width: false,
+                        type: false
+                    },
+                    crop_image: {
+                        crop_image_id: false,
+                        name: false,
+                        path: false,
+                        size: false,
+                        height: false,
+                        width: false,
+                        type: false
+                    }
+                };
+            }
+
+            return data_num;
+        },
+        /***********************/
+        /*** Input functions ***/
+        /***********************/
+        _add_image_input: function(item_id, file_info) {
             var info = this;
 
             info.data.main_cont.find('.upcut_inputs').append('<input type="hidden" name="'+info.options.upload_name+'" value="'+file_info.path+'" />');
         },
-        _add_image_thumbnail: function(file_info) {
+        /****************************************/
+        /*** Image/Thumbnail functions ***/
+        /****************************************/
+        _add_image_thumbnail: function(item_id, file_info) {
             var info = this;
             var thumb_id = info._unique_id();
 
@@ -233,12 +278,15 @@
                 alert('delete thumb');
             });
         },
+        /****************************************/
+        /*** Display and Processing functions ***/
+        /****************************************/
         _add_to_queue: function() {
             var info = this;
             var queue_id = info._unique_id();
-            var cont = '';
 
             /* Add queue container */
+            var cont = '';
             cont += '<div class="upcut_queue_item" id="'+queue_id+'">';
             cont += '   <div class="upcut_queue_display"></div>'; /* Display */
             cont += '   <div class="upcut_queue_status"></div>'; /* Status */
@@ -251,14 +299,14 @@
 
             return queue_id;
         },
-        _add_file_to_queue: function(queue_id, file_info) { /* Take selected file info and add to queue display */
+        _add_file_to_queue: function(item_id, queue_id, file_info) { /* Take selected file info and add to queue display */
             var info = this;
-            var text = '';
 
             /* Validate file */
             info._validate_file(file_info);
 
             /* Add name to queue display */
+            var text = '';
             text += '<div style="float: left;">Name: '+info._minimize_file_name(file_info.name, info.options.name_char_limit)+'</div>';
             text += '<div style="float: right;">Size: '+info._size_in_text(file_info.size)+'</div>';
             text += '<div style="clear: both;"></div>';
@@ -266,15 +314,18 @@
 
             return;
         },
-        _remove_queue_item: function(queue_id) {
+        _remove_queue_item: function(item_id, queue_id) {
             var info = this;
             setTimeout(function(){
                 info.data.main_cont.find('.upcut_queue #'+queue_id).slideUp('slow', function() {
                     $(this).remove();
+
+                    /* Remove queue_id from data item */
+                    info.data.items[item_id].queue_id = false;
                 });
             }, 3000);
         },
-        _animate_progress: function(queue_id, speed, percent) {
+        _animate_progress: function(item_id, queue_id, speed, percent) {
             var info = this;
 
             info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_progress .upcut_progress_bar').animate({
@@ -286,9 +337,9 @@
         /**********************/
         /*** Crop functions ***/
         /**********************/
-        _crop_start: function(image) {
+        _crop_start: function(item_id, image) {
             var info = this;
-            var image_id = info._unique_id();
+            var crop_image_id = info._unique_id();
             var desc_width, desc_height, title_height;
             var cont_padding = 50;
             var window_width = $(window).width();
@@ -296,12 +347,15 @@
             var img_ratio, img_width, img_height, cont_width, cont_height;
             var crop_coords;
 
+            /* Add crop_image_id to data item */
+            info.data.items[item_id].crop_image.crop_image_id = crop_image_id;
+
             /* Add crop container */
             var crop_cont = '';
             crop_cont += '<div class="uc_crop_overlay">';
             crop_cont += '  <div class="uc_crop_cont">'
             crop_cont += '      <div class="uc_crop_title">'+info.options.crop_title+'<div class="uc_crop_close">X</div></div>';
-            crop_cont += '      <div class="uc_crop_img"><img id="'+image_id+'" src="'+image.file.path+'" /></div>'; /* Add Image */
+            crop_cont += '      <div class="uc_crop_img"><img id="'+crop_image_id+'" src="'+image.file.path+'" /></div>'; /* Add Image */
             crop_cont += '      <div class="uc_crop_desc">';
             crop_cont += '          <div class="uc_crop_preview"><div><img src="'+image.file.path+'" /></div></div>'; /* Crop preview */
             crop_cont += '          <div class="uc_crop_preview_text">Preview</div>';
@@ -315,7 +369,7 @@
 
             /* Set height width variables - based upon fitting window size */
             desc_width = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc').outerWidth(true);
-            desc_height = info.data.main_cont.find('.images_edit_valuc_crop_overlay .uc_crop_desc').outerHeight(true);
+            desc_height = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc').outerHeight(true);
             title_height = info.data.main_cont.find('.uc_crop_overlay .uc_crop_title').outerHeight(true);
 
             /* Get aspect ratio */
@@ -357,7 +411,7 @@
             });
             
             /* Add jcrop */
-            info.data.main_cont.find('#'+image_id).Jcrop({
+            info.data.main_cont.find('#'+crop_image_id).Jcrop({
                 onChange: crop_preview,
                 onSelect: crop_preview,
                 aspectRatio: (info.options.crop_square ? 1 : 0),
@@ -405,11 +459,11 @@
             /* Add event listener for not needing to crop */
             info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_crop_none').click(function() {
                 /* Add input field */
-                info._add_image_input(image.file);
+                info._add_image_input(item_id, image.file);
 
                 /* Add thumbnail */
                 if(info.options.images_after_upload) {
-                    info._add_image_thumbnail(image.file);
+                    info._add_image_thumbnail(item_id, image.file);
                 }
 
                 /* Close and remove crop */
@@ -418,10 +472,10 @@
 
             /* Add event listener for crop submit */
             info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_crop_submit').click(function() {
-                info._crop_submit(image, crop_coords);
+                info._crop_submit(item_id, image, crop_coords);
             });
         },
-        _crop_submit: function(image_info, coords) {
+        _crop_submit: function(item_id, image_info, coords) {
             var info = this;
 
             if(info.options.crop_url) {
@@ -433,12 +487,20 @@
                         results = $.parseJSON(results);
                         if(results.status == 'success') {
                             /* Add input field */
-                            info._add_image_input(results.file);
+                            info._add_image_input(item_id, results.file);
 
                             /* Add thumbnail */
                             if(info.options.images_after_upload) {
-                                info._add_image_thumbnail(results.file);
+                                info._add_image_thumbnail(item_id, results.file);
                             }
+
+                            /* Add file info to data item */
+                            info.data.items[item_id].crop_image.name = results.file.name;
+                            info.data.items[item_id].crop_image.path = results.file.path;
+                            info.data.items[item_id].crop_image.size = results.file.size;
+                            info.data.items[item_id].crop_image.height = results.file.height;
+                            info.data.items[item_id].crop_image.width = results.file.width;
+                            info.data.items[item_id].crop_image.type = results.file.type;
 
                             /* Close and remove crop */
                             info._crop_remove();
@@ -464,14 +526,14 @@
         /************************/
         /*** Iframe functions ***/
         /************************/
-        _start_iframe_upload: function(file_info, frame_id, queue_id) {
+        _start_iframe_upload: function(item_id, file_info, frame_id, queue_id) {
             var info = this;
             var frame_cont = $('#'+frame_id);
             var return_info;
 
             frame_cont.contents().find('body form').submit();
 
-            info._animate_progress(queue_id, 1000, 100);
+            info._animate_progress(item_id, queue_id, 1000, 100);
 
             frame_cont.load(function () {
                 frame_cont.contents().find('body form').remove(); /* Remove form */
@@ -486,20 +548,28 @@
                     info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_success">Sucess!</div>');
 
                     /* Remove queue display */
-                    info._remove_queue_item(queue_id);
+                    info._remove_queue_item(item_id, queue_id);
+
+                    /* Add file info to data item */
+                    info.data.items[item_id].orig_image.name = return_info.file.name;
+                    info.data.items[item_id].orig_image.path = return_info.file.path;
+                    info.data.items[item_id].orig_image.size = return_info.file.size;
+                    info.data.items[item_id].orig_image.height = return_info.file.height;
+                    info.data.items[item_id].orig_image.width = return_info.file.width;
+                    info.data.items[item_id].orig_image.type = return_info.file.type;
 
                     /* If crop add image and initiate jcrop */
                     if(info.options.crop) {
-                        info._crop_start(return_info);
+                        info._crop_start(item_id, return_info);
                     } else {
                         /* If no crop finalize upload and add hidden input field to final div location */
-                        info._add_image_input(return_info.file);
+                        info._add_image_input(item_id, return_info.file);
                     }
                 }
             });
 
         },
-        _add_iframe: function() {
+        _add_iframe: function(item_id) {
             var info = this;
 
             /* If multiple is false clear queue */
@@ -509,10 +579,14 @@
 
             /* Set variables */
             var frame_id = info._unique_id();
+            info.data.items[item_id].frame_id = frame_id;
             var frame_cont;
 
             /* Add new addition to queue */
             var queue_id = info._add_to_queue();
+
+            /* Add queue_id to data item_id */
+            info.data.items[item_id].queue_id = queue_id;
 
             /* Create iframe and add to queue */
             $('<iframe style="display: none;" class="upcut_queue_iframe" id="'+frame_id+'"></iframe>').load(function(){
@@ -527,10 +601,10 @@
                 /* Listen out for input field file selection */
                 frame_cont.contents().find('input[type=file]').change(function() {
                     /* Add info to queue display */
-                    info._add_file_to_queue(queue_id, this.files[0]);
+                    info._add_file_to_queue(item_id, queue_id, this.files[0]);
 
                     if(info.options.auto_upload) { /* Upload file */
-                        info._start_iframe_upload(this.files[0], frame_id, queue_id);
+                        info._start_iframe_upload(item_id, this.files[0], frame_id, queue_id);
                     } else { /* Queue for later submission */
 
                     }

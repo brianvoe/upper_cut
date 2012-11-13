@@ -6,6 +6,11 @@
 	$crop_y = $_POST['y'];
 	$crop_h = $_POST['h'];
 	$crop_w = $_POST['w'];
+    $upload_path = 'crops/'; // Crops location - trailing slash
+
+    // Copy to new folder
+    copy($image_path, $upload_path.$image_name);
+    $image_path = $upload_path.$image_name;
 	 
 	// Get image width and height
 	list($image_width, $image_height, $image_type, $image_attr) = getimagesize($image_path);
@@ -14,19 +19,23 @@
 	 
 	// Crop image
 	$canvas = imagecreatetruecolor($crop_w, $crop_h);
-	$current_image = imagecreatefromjpeg($image_path);
-	imagecopy($canvas, $current_image, 0, 0, $crop_x, $crop_y, $image_width, $image_height);
 
 	// Save Image
 	switch($image_ext) {
         case 'jpg':
         case 'jpeg':
+            $current_image = imagecreatefromjpeg($image_path);
+            imagecopy($canvas, $current_image, 0, 0, $crop_x, $crop_y, $image_width, $image_height);
             imagejpeg($canvas, $image_path, 100);
             break;
         case 'gif':
+            $current_image = imagecreatefromgif($image_path);
+            imagecopy($canvas, $current_image, 0, 0, $crop_x, $crop_y, $image_width, $image_height);
             imagegif($canvas, $image_path);
             break;
         case 'png':
+            $current_image = imagecreatefrompng($image_path);
+            imagecopy($canvas, $current_image, 0, 0, $crop_x, $crop_y, $image_width, $image_height);
             imagepng($canvas, $image_path, 9);
             break;  
     }
