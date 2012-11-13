@@ -1,2 +1,4 @@
 /uploads/*
 !/uploads/index.html
+/crops/*
+!/crops/index.html
