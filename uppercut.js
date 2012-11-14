@@ -18,7 +18,7 @@
         upload_name: 'uc_image', /* Name of input field, will use this for post grabbing - Make sure to add [] if its a multiple value */
 
         /* Preferences */
-        html5: false, /* Whether or not to use html5 version of uploading - If browser is not capable it will be set to false */
+        html5: true, /* Whether or not to use html5 version of uploading - If browser is not capable it will be set to false */
         auto_upload: true, /* Auto upload upon file select */
         uploaded_browse: true, /* Once single image is uploaded use recently uploaded image as clickable browse and hide original browse button */
         multiple: true, /* Whether or not its multiple select - If not html5 compatible it will be set to false */
@@ -143,13 +143,13 @@
                 /* html5 upload creation */
 
                 /* Add hidden input file field */
-                info.data.main_cont.append('<input style="display: none;" class="upcut_input_upload" type="file" name="" />');
+                info.data.main_cont.append('<input style="display: none;" '+(info.options.multiple ? 'multiple="multiple"' : '')+' class="upcut_input_upload" type="file" name="" />');
 
                 /* Add change event to upload file */
                 info.data.main_cont.find('.upcut_input_upload').change(function(){
-                    if(info._validate_file(this.files[0])){
-                        /* Process html5 image uploading */
-                    }
+                    /* Process files */
+                    info._process_html5_files($(this)[0].files);
+
                     $(this).val(''); /* Clear out input field */
                 });
             } else {
@@ -408,6 +408,149 @@
                 // Animation complete
             });
         },
+        /***********************/
+        /*** Html5 functions ***/
+        /***********************/
+        _process_html5_files: function(files) {
+            var info = this;
+
+            /* Loop though each file and start processing */
+            $.each(files, function(index, file) {
+                /* Validate each file */
+                if(info._validate_file(file)){
+                    $.ajax({
+                        url: info.options.upload_url,
+                        type: 'POST',
+                        data: file,
+                        processData: false,
+                        contentType: file.type,
+                        success: function() {
+                            console.log('Successful file upload');
+                        },
+                        error: function(e) {
+                            console.log(e);
+                        },
+                        xhr: function() {
+                            var myXhr = $.ajaxSettings.xhr();
+                            if(myXhr.upload){
+                                myXhr.upload.addEventListener('progress', showProgress, false);
+                                function showProgress(evt) {
+                                    console.log((evt.loaded / evt.total) * 100);
+                                }
+                            } else {
+                                console.log('Upload progress is not supported.');
+                            }
+                            return myXhr;
+                        }
+                    });
+
+                } else {
+                    /* Fail show file errors */
+                }
+            });
+
+            return;
+        },
+        _start_html5_upload: function() {
+            var info = this;
+
+
+        },
+        /************************/
+        /*** Iframe functions ***/
+        /************************/
+        _add_iframe: function() {
+            var info = this;
+
+            /* If multiple is false clear queue */
+            if(!info.options.multiple) {
+                info.clear();
+            }
+
+            /* Set variables */
+            var frame_id = info._unique_id();
+            var frame_cont;
+
+            /* Add new addition to queue */
+            var queue_id = info._unique_id();
+            info._add_to_queue(queue_id);
+
+            /* Create iframe and add to queue */
+            $('<iframe style="display: none;" class="upcut_queue_iframe" id="'+frame_id+'"></iframe>').load(function(){
+                var form_txt = '';
+                form_txt += '<form action="'+info.options.upload_url+'" method="post" enctype="multipart/form-data">';
+                form_txt += '   <input style="display: none;" type="file" name="'+info.options.upload_name+'" />';
+                form_txt += '</form>';
+
+                frame_cont = $('#'+frame_id);
+                frame_cont.contents().find('body').append(form_txt);
+                
+                /* Listen out for input field file selection */
+                frame_cont.contents().find('input[type=file]').change(function() {
+                    /* Add new data item_id */
+                    var item_id = info._add_data_item();
+
+                    /* Add frame_id and queue_id to data item_id */
+                    info.data.items[item_id].frame_id = frame_id;
+                    info.data.items[item_id].queue_id = queue_id;
+
+                    /* Add info to queue display */
+                    info._add_file_to_queue(item_id, queue_id, this.files[0]);
+
+                    if(info.options.auto_upload) { /* Upload file */
+                        info._start_iframe_upload(item_id, this.files[0], frame_id, queue_id);
+                    } else { /* Queue for later submission */
+
+                    }
+                });
+            }).appendTo(info.data.main_cont.find('.upcut_queue #'+queue_id));
+
+            /* Click input field to select file */
+            frame_cont.contents().find('input[type=file]').click();
+        },
+        _start_iframe_upload: function(item_id, file_info, frame_id, queue_id) {
+            var info = this;
+            var frame_cont = $('#'+frame_id);
+            var return_info;
+
+            frame_cont.contents().find('body form').submit();
+
+            info._animate_progress(item_id, queue_id, 1000, 100);
+
+            frame_cont.load(function () {
+                frame_cont.contents().find('body form').remove(); /* Remove form */
+                return_info = $.parseJSON(frame_cont.contents().find('body').html());
+                frame_cont.unbind('load');
+                frame_cont.remove(); /* Delete iframe */
+                
+                /* Process return info */
+                if(return_info.status == 'error') { /* Error */
+                    info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_error">'+return_info.info+'</div>');
+                } else { /* Success */
+                    info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_success">Sucess!</div>');
+
+                    /* Remove queue display */
+                    info._remove_queue_item(item_id, queue_id);
+
+                    /* Add file info to data item */
+                    info.data.items[item_id].orig_image.name = return_info.file.name;
+                    info.data.items[item_id].orig_image.path = return_info.file.path;
+                    info.data.items[item_id].orig_image.size = return_info.file.size;
+                    info.data.items[item_id].orig_image.height = return_info.file.height;
+                    info.data.items[item_id].orig_image.width = return_info.file.width;
+                    info.data.items[item_id].orig_image.type = return_info.file.type;
+
+                    /* If crop add image and initiate jcrop */
+                    if(info.options.crop) {
+                        info._crop_start(item_id, return_info.file, false);
+                    } else {
+                        /* If no crop finalize upload and add hidden input field to final div location */
+                        info._add_image_input(item_id, return_info.file);
+                    }
+                }
+            });
+
+        },
         /**********************/
         /*** Crop functions ***/
         /**********************/
@@ -629,105 +772,6 @@
             var info = this;
 
             info.data.main_cont.find('.uc_crop_overlay').remove();
-        },
-        /***********************/
-        /*** Html5 functions ***/
-        /***********************/
-
-        /************************/
-        /*** Iframe functions ***/
-        /************************/
-        _start_iframe_upload: function(item_id, file_info, frame_id, queue_id) {
-            var info = this;
-            var frame_cont = $('#'+frame_id);
-            var return_info;
-
-            frame_cont.contents().find('body form').submit();
-
-            info._animate_progress(item_id, queue_id, 1000, 100);
-
-            frame_cont.load(function () {
-                frame_cont.contents().find('body form').remove(); /* Remove form */
-                return_info = $.parseJSON(frame_cont.contents().find('body').html());
-                frame_cont.unbind('load');
-                frame_cont.remove(); /* Delete iframe */
-                
-                /* Process return info */
-                if(return_info.status == 'error') { /* Error */
-                    info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_error">'+return_info.info+'</div>');
-                } else { /* Success */
-                    info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_success">Sucess!</div>');
-
-                    /* Remove queue display */
-                    info._remove_queue_item(item_id, queue_id);
-
-                    /* Add file info to data item */
-                    info.data.items[item_id].orig_image.name = return_info.file.name;
-                    info.data.items[item_id].orig_image.path = return_info.file.path;
-                    info.data.items[item_id].orig_image.size = return_info.file.size;
-                    info.data.items[item_id].orig_image.height = return_info.file.height;
-                    info.data.items[item_id].orig_image.width = return_info.file.width;
-                    info.data.items[item_id].orig_image.type = return_info.file.type;
-
-                    /* If crop add image and initiate jcrop */
-                    if(info.options.crop) {
-                        info._crop_start(item_id, return_info.file, false);
-                    } else {
-                        /* If no crop finalize upload and add hidden input field to final div location */
-                        info._add_image_input(item_id, return_info.file);
-                    }
-                }
-            });
-
-        },
-        _add_iframe: function() {
-            var info = this;
-
-            /* If multiple is false clear queue */
-            if(!info.options.multiple) {
-                info.clear();
-            }
-
-            /* Set variables */
-            var frame_id = info._unique_id();
-            var frame_cont;
-
-            /* Add new addition to queue */
-            var queue_id = info._unique_id();
-            info._add_to_queue(queue_id);
-
-            /* Create iframe and add to queue */
-            $('<iframe style="display: none;" class="upcut_queue_iframe" id="'+frame_id+'"></iframe>').load(function(){
-                var form_txt = '';
-                form_txt += '<form action="'+info.options.upload_url+'" method="post" enctype="multipart/form-data">';
-                form_txt += '   <input style="display: none;" type="file" name="'+info.options.upload_name+'" />';
-                form_txt += '</form>';
-
-                frame_cont = $('#'+frame_id);
-                frame_cont.contents().find('body').append(form_txt);
-                
-                /* Listen out for input field file selection */
-                frame_cont.contents().find('input[type=file]').change(function() {
-                    /* Add new data item_id */
-                    var item_id = info._add_data_item();
-
-                    /* Add frame_id and queue_id to data item_id */
-                    info.data.items[item_id].frame_id = frame_id;
-                    info.data.items[item_id].queue_id = queue_id;
-
-                    /* Add info to queue display */
-                    info._add_file_to_queue(item_id, queue_id, this.files[0]);
-
-                    if(info.options.auto_upload) { /* Upload file */
-                        info._start_iframe_upload(item_id, this.files[0], frame_id, queue_id);
-                    } else { /* Queue for later submission */
-
-                    }
-                });
-            }).appendTo(info.data.main_cont.find('.upcut_queue #'+queue_id));
-
-            /* Click input field to select file */
-            frame_cont.contents().find('input[type=file]').click();
         },
         /**********************/
         /*** Misc functions ***/
