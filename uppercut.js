@@ -15,9 +15,10 @@
         crop_url: false, /* Url of location where to send crop parameters */
 
         /* Naming */
-        upload_name: 'uc_image', /* Name of input field, will use this for post grabbing */
+        upload_name: 'uc_image', /* Name of input field, will use this for post grabbing - Make sure to add [] if its a multiple value */
 
         /* Preferences */
+        html5: false, /* Whether or not to use html5 version of uploading - If browser is not capable it will be set to false */
         auto_upload: true, /* Auto upload upon file select */
         uploaded_browse: true, /* Once single image is uploaded use recently uploaded image as clickable browse and hide original browse button */
         multiple: true, /* Whether or not its multiple select - If not html5 compatible it will be set to false */
@@ -26,8 +27,8 @@
         images_after_upload: true, /* Show images after upload and/or cropping */
         images_width: 75, /* Images width */
         images_height: 75, /* Images height */
-        images_edit_val: '\\', /* Value of edit button - false if dont want to show edit button */
-        images_delete_val: 'X', /* Value of delete button - false if dont want to show delete button */
+        images_edit_val: 'Edit', /* Value of edit button - false if dont want to show edit button */
+        images_delete_val: 'Delete', /* Value of delete button - false if dont want to show delete button */
 
         /* Crop */
         crop: true, /* Whether or not to crop image after upload - If true, multiple will be set to false */
@@ -56,7 +57,6 @@
     var upcut_data = {
         main_id: null, /* Main container id */
         main_cont: null, /* Main container */
-        html5: false, /* Do not use html5 by defualt */
         errors: {}, /* Associative array list errors */
         items: {} /* Array for storing items */
     };
@@ -139,7 +139,7 @@
             }
 
             /* Set whether or not to use html5 uploader or older single upload */            
-            if(info.data.html5) {
+            if(info.options.html5) {
                 /* html5 upload creation */
 
                 /* Add hidden input file field */
@@ -161,19 +161,16 @@
         browse: function() {
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
 
-            /* Start new item identification */
-            var item_id = info._add_new_data_item();
-
-            if(info.data.html5) { /* html5 */
+            if(info.options.html5) { /* html5 */
                 info.data.main_cont.find('.upcut_input_upload').click();
             } else { /* Old school */
-                info._add_iframe(item_id);
+                info._add_iframe();
             }
         },
         upload: function() {
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
 
-            if(info.data.html5) { /* html5 */
+            if(info.options.html5) { /* html5 */
                 
             } else { /* Old school */
                 
@@ -190,6 +187,9 @@
 
             /* Clear out queue */
             info.data.main_cont.find('.upcut_queue .upcut_queue_item').remove();
+
+            /* Remove data items */
+            info.data.items = {};
         },
         destroy: function() {
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
@@ -206,7 +206,7 @@
         /***************************/
         /*** Data item functions ***/
         /***************************/
-        _add_new_data_item: function() {
+        _add_data_item: function() {
             var info = this;
             var data_num;
 
@@ -217,9 +217,15 @@
                 info.data.items[data_num] = {
                     frame_id: false,
                     queue_id: false,
-                    input_id: false,
-                    input_val: false,
                     image_id: false,
+                    thumbnail: {
+                        id: false,
+                        src: false
+                    },
+                    input: {
+                        id: false,
+                        val: false
+                    },
                     orig_image: {
                         name: false,
                         path: false,
@@ -230,6 +236,12 @@
                     },
                     crop_image: {
                         crop_image_id: false,
+                        coords: {
+                            x: false,
+                            y: false,
+                            w: false,
+                            h: false
+                        },
                         name: false,
                         path: false,
                         size: false,
@@ -242,13 +254,40 @@
 
             return data_num;
         },
+        _remove_data_item: function(item_id) {
+            var info = this;
+
+            delete info.data.items[item_id];
+        },
         /***********************/
         /*** Input functions ***/
         /***********************/
         _add_image_input: function(item_id, file_info) {
             var info = this;
+            var input_id = info._unique_id();
 
-            info.data.main_cont.find('.upcut_inputs').append('<input type="hidden" name="'+info.options.upload_name+'" value="'+file_info.path+'" />');
+            /* Add input to data item */
+            info.data.items[item_id].input.id = input_id;
+            info.data.items[item_id].input.val = file_info.path;
+
+            info.data.main_cont.find('.upcut_inputs').append('<input type="hidden" id="'+input_id+'" name="'+info.options.upload_name+'" value="'+file_info.path+'" />');
+        },
+        _update_image_input: function(item_id, input_id, file_info) {
+            var info = this;
+
+            /* Add input to data item */
+            info.data.items[item_id].input.val = file_info.path;
+
+            info.data.main_cont.find('.upcut_inputs #'+input_id).val(file_info.path);
+        },
+        _remove_image_input: function(item_id, input_id) {
+            var info = this;
+
+            /* Remove input to data item */
+            info.data.items[item_id].input.id = false;
+            info.data.items[item_id].input.val = false;
+
+            info.data.main_cont.find('.upcut_inputs #'+input_id).remove();
         },
         /****************************************/
         /*** Image/Thumbnail functions ***/
@@ -256,6 +295,10 @@
         _add_image_thumbnail: function(item_id, file_info) {
             var info = this;
             var thumb_id = info._unique_id();
+
+            /* Add data item thumb */
+            info.data.items[item_id].thumbnail.id = thumb_id;
+            info.data.items[item_id].thumbnail.src = file_info.path;
 
             /* Put together thumb div */
             var image_thumb = '';
@@ -270,24 +313,52 @@
 
             /* Add event listener for edit */
             info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_edit').click(function(){
-                alert('edit thumb');
+                info._edit_image_thumbnail(item_id);
             });
 
             /* Add event listener for delete */
             info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_delete').click(function(){
-                alert('delete thumb');
+                info._remove_image_thumbnail(item_id);
             });
+        },
+        _update_image_thumbnail: function(item_id, thumb_id, file_info) {
+            var info = this;
+
+            /* Update data thumbnail src */
+            info.data.items[item_id].thumbnail.src = file_info.path;
+
+            /* Update thumbnail src */
+            info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_img img').attr('src', file_info.path);
+        },
+        _edit_image_thumbnail: function(item_id) {
+            var info = this;
+
+            /* Grab original image and start cropping again */
+            info._crop_start(item_id, info.data.items[item_id].orig_image, true);
+        },
+        _remove_image_thumbnail: function(item_id) {
+            var info = this;
+
+            /* REMOVING THUMBNAIL MUST REMOVE ALL DATA AND INPUTS FOR THAT IMAGE */
+
+            /* Remove thumbnail */
+            info.data.main_cont.find('.upcut_images #'+info.data.items[item_id].thumbnail.id).remove();
+
+            /* Remove input */
+            info.data.main_cont.find('.upcut_inputs #'+info.data.items[item_id].input.id).remove();
+            
+            /* Remove data item */
+            info._remove_data_item(item_id);
         },
         /****************************************/
         /*** Display and Processing functions ***/
         /****************************************/
-        _add_to_queue: function() {
+        _add_to_queue: function(queue_id) {
             var info = this;
-            var queue_id = info._unique_id();
 
             /* Add queue container */
             var cont = '';
-            cont += '<div class="upcut_queue_item" id="'+queue_id+'">';
+            cont += '<div style="display: none;" class="upcut_queue_item" id="'+queue_id+'">';
             cont += '   <div class="upcut_queue_display"></div>'; /* Display */
             cont += '   <div class="upcut_queue_status"></div>'; /* Status */
             cont += '   <div style="clear: both;"></div>';
@@ -297,7 +368,7 @@
             cont += '</div>';
             info.data.main_cont.find('.upcut_queue').append(cont);
 
-            return queue_id;
+            return;
         },
         _add_file_to_queue: function(item_id, queue_id, file_info) { /* Take selected file info and add to queue display */
             var info = this;
@@ -328,6 +399,9 @@
         _animate_progress: function(item_id, queue_id, speed, percent) {
             var info = this;
 
+            /* Make sure queue is showing */
+            info.data.main_cont.find('.upcut_queue #'+queue_id).slideDown('fast');
+
             info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_progress .upcut_progress_bar').animate({
                 width: percent+'%'
             }, speed, function() {
@@ -337,7 +411,7 @@
         /**********************/
         /*** Crop functions ***/
         /**********************/
-        _crop_start: function(item_id, image) {
+        _crop_start: function(item_id, image, update) {
             var info = this;
             var crop_image_id = info._unique_id();
             var desc_width, desc_height, title_height;
@@ -355,11 +429,11 @@
             crop_cont += '<div class="uc_crop_overlay">';
             crop_cont += '  <div class="uc_crop_cont">'
             crop_cont += '      <div class="uc_crop_title">'+info.options.crop_title+'<div class="uc_crop_close">X</div></div>';
-            crop_cont += '      <div class="uc_crop_img"><img id="'+crop_image_id+'" src="'+image.file.path+'" /></div>'; /* Add Image */
+            crop_cont += '      <div class="uc_crop_img"><img id="'+crop_image_id+'" src="'+image.path+'" /></div>'; /* Add Image */
             crop_cont += '      <div class="uc_crop_desc">';
-            crop_cont += '          <div class="uc_crop_preview"><div><img src="'+image.file.path+'" /></div></div>'; /* Crop preview */
+            crop_cont += '          <div class="uc_crop_preview"><div><img src="'+image.path+'" /></div></div>'; /* Crop preview */
             crop_cont += '          <div class="uc_crop_preview_text">Preview</div>';
-            crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_none">Do Not Crop</div>';
+            crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_none">Use Full Image</div>';
             crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_submit">Submit Crop</div>';
             crop_cont += '          <div class="uc_crop_img_info"></div>';
             crop_cont += '      </div>';
@@ -373,20 +447,20 @@
             title_height = info.data.main_cont.find('.uc_crop_overlay .uc_crop_title').outerHeight(true);
 
             /* Get aspect ratio */
-            if(image.file.width > image.file.height) {
-                img_ratio = image.file.height / image.file.width;
-                img_width = (image.file.width + desc_width + cont_padding > window_width ? window_width - desc_width - cont_padding : image.file.width);
+            if(image.width > image.height) {
+                img_ratio = image.height / image.width;
+                img_width = (image.width + desc_width + cont_padding > window_width ? window_width - desc_width - cont_padding : image.width);
                 img_height = img_width * img_ratio;
                 if(img_height + title_height + cont_padding > window_height) {
-                    img_height = (image.file.height + title_height + cont_padding > window_height ? window_height - title_height - cont_padding : image.file.height);
+                    img_height = (image.height + title_height + cont_padding > window_height ? window_height - title_height - cont_padding : image.height);
                     img_width = img_height / img_ratio;
                 }
             } else {
-                img_ratio = image.file.width / image.file.height;
-                img_height = (image.file.height + title_height + cont_padding > window_height ? window_height - title_height - cont_padding : image.file.height);
+                img_ratio = image.width / image.height;
+                img_height = (image.height + title_height + cont_padding > window_height ? window_height - title_height - cont_padding : image.height);
                 img_width = img_height * img_ratio;
                 if(img_width + desc_width + cont_padding > window_width) {
-                    img_width = (image.file.width + desc_width + cont_padding > window_width ? window_width - desc_width - cont_padding : image.file.width);
+                    img_width = (image.width + desc_width + cont_padding > window_width ? window_width - desc_width - cont_padding : image.width);
                     img_height = img_width / img_ratio;
                 }
             }
@@ -408,15 +482,32 @@
             /* Add event listener for close */
             info.data.main_cont.find('.uc_crop_overlay .uc_crop_close').click(function(){
                 info._crop_remove();
+
+                /* Remove data item */
+                if(!update) {
+                    info._remove_data_item(item_id);
+                }
             });
+
+            /* Set Select - If update is true and coords are set */
+            if(update && info.data.items[item_id].crop_image.coords.x) {
+                var crop_set_select = [
+                    info.data.items[item_id].crop_image.coords.x,
+                    info.data.items[item_id].crop_image.coords.y,
+                    (info.data.items[item_id].crop_image.coords.x + info.data.items[item_id].crop_image.coords.w),
+                    (info.data.items[item_id].crop_image.coords.y + info.data.items[item_id].crop_image.coords.h)
+                ];
+            } else {
+                var crop_set_select = [(image.width / 2 - 100),(image.height / 2 - 100),(image.width / 2 + 100),(image.height / 2 + 100)];
+            }
             
             /* Add jcrop */
             info.data.main_cont.find('#'+crop_image_id).Jcrop({
                 onChange: crop_preview,
                 onSelect: crop_preview,
                 aspectRatio: (info.options.crop_square ? 1 : 0),
-                setSelect: [(image.file.width / 2 - 100),(image.file.height / 2 - 100),(image.file.width / 2 + 100),(image.file.height / 2 + 100)],
-                trueSize: [image.file.width,image.file.height], /* Actual size of original image */
+                setSelect: crop_set_select,
+                trueSize: [image.width,image.height], /* Actual size of original image */
                 bgOpacity: .4
             },function(){
                 /* var jcrop = this; */
@@ -434,36 +525,50 @@
 
                 /* Set crop coordinates */
                 crop_coords = coords;
-                
+
+                /* Set data item crop coords */
+                info.data.items[item_id].crop_image.coords.x = coords.x;
+                info.data.items[item_id].crop_image.coords.y = coords.y;
+                info.data.items[item_id].crop_image.coords.w = coords.w;
+                info.data.items[item_id].crop_image.coords.h = coords.h;
+
                 /* Set ratios and scales */
                 var crop_ratio = (coords.w / coords.h);
                 var inner_width = crop_ratio >= (preview_max_width / preview_max_height) ? preview_max_width : preview_max_height * crop_ratio;
                 var inner_height = crop_ratio < (preview_max_width / preview_max_height) ? preview_max_height : preview_max_width / crop_ratio;
                 var scalex = inner_width / coords.w;
                 var scaley = inner_height / coords.h;
-                preview_div.css({ /* Style preview div */
+                /* Style preview div */
+                preview_div.css({
                     width: Math.ceil(inner_width) + 'px',
                     height: Math.ceil(inner_height) + 'px',
                     marginTop: (preview_max_height - inner_height) / 2 + 'px',
                     marginLeft: (preview_max_width - inner_width) / 2 + 'px',
                     overflow: 'hidden'
                 });
-                preview_img.css({ /* Style preview image */
-                    width: Math.round(scalex * image.file.width) + 'px', /* Grab original image width */
-                    height: Math.round(scaley * image.file.height) + 'px', /* Grab original image height */
+                /* Style preview image */
+                preview_img.css({
+                    width: Math.round(scalex * image.width) + 'px', /* Grab original image width */
+                    height: Math.round(scaley * image.height) + 'px', /* Grab original image height */
                     marginLeft: '-' + Math.round(scalex * coords.x) + 'px',
                     marginTop: '-' + Math.round(scaley * coords.y) + 'px'
                 });
             }
 
-            /* Add event listener for not needing to crop */
+            /* Add event listener for not needing to crop and using full image */
             info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_crop_none').click(function() {
-                /* Add input field */
-                info._add_image_input(item_id, image.file);
+                if(update && info.data.items[item_id].crop_image.coords.x) {
+                    /* Update input field */
+                    info._update_image_input(item_id, info.data.items[item_id].input.id, image);
 
-                /* Add thumbnail */
-                if(info.options.images_after_upload) {
-                    info._add_image_thumbnail(item_id, image.file);
+                    /* Update thumbnail */
+                    info._update_image_thumbnail(item_id, info.data.items[item_id].thumbnail.id, image);
+                } else {
+                    /* Add input field */
+                    info._add_image_input(item_id, image);
+
+                    /* Add thumbnail */
+                    info._add_image_thumbnail(item_id, image);
                 }
 
                 /* Close and remove crop */
@@ -472,25 +577,31 @@
 
             /* Add event listener for crop submit */
             info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_crop_submit').click(function() {
-                info._crop_submit(item_id, image, crop_coords);
+                info._crop_submit(item_id, image, crop_coords, (update && info.data.items[item_id].crop_image.coords.x ? true: false));
             });
         },
-        _crop_submit: function(item_id, image_info, coords) {
+        _crop_submit: function(item_id, image_info, coords, update) {
             var info = this;
 
             if(info.options.crop_url) {
                 $.ajax({
                     type: 'POST',
                     url: info.options.crop_url,
-                    data: 'image_path='+image_info.file.path+'&image_name='+image_info.file.name+'&x='+coords.x+'&y='+coords.y+'&w='+coords.w+'&h='+coords.h,
-                    success: function(results){
+                    data: 'image_path='+image_info.path+'&image_name='+image_info.name+'&x='+coords.x+'&y='+coords.y+'&w='+coords.w+'&h='+coords.h,
+                    success: function(results) {
                         results = $.parseJSON(results);
                         if(results.status == 'success') {
-                            /* Add input field */
-                            info._add_image_input(item_id, results.file);
+                            if(update) {
+                                /* Update input field */
+                                info._update_image_input(item_id, info.data.items[item_id].input.id, results.file);
 
-                            /* Add thumbnail */
-                            if(info.options.images_after_upload) {
+                                /* Update thumbnail */
+                                info._update_image_thumbnail(item_id, info.data.items[item_id].thumbnail.id, results.file);
+                            } else {
+                                /* Add input field */
+                                info._add_image_input(item_id, results.file);
+
+                                /* Add thumbnail */
                                 info._add_image_thumbnail(item_id, results.file);
                             }
 
@@ -560,7 +671,7 @@
 
                     /* If crop add image and initiate jcrop */
                     if(info.options.crop) {
-                        info._crop_start(item_id, return_info);
+                        info._crop_start(item_id, return_info.file, false);
                     } else {
                         /* If no crop finalize upload and add hidden input field to final div location */
                         info._add_image_input(item_id, return_info.file);
@@ -569,7 +680,7 @@
             });
 
         },
-        _add_iframe: function(item_id) {
+        _add_iframe: function() {
             var info = this;
 
             /* If multiple is false clear queue */
@@ -579,14 +690,11 @@
 
             /* Set variables */
             var frame_id = info._unique_id();
-            info.data.items[item_id].frame_id = frame_id;
             var frame_cont;
 
             /* Add new addition to queue */
-            var queue_id = info._add_to_queue();
-
-            /* Add queue_id to data item_id */
-            info.data.items[item_id].queue_id = queue_id;
+            var queue_id = info._unique_id();
+            info._add_to_queue(queue_id);
 
             /* Create iframe and add to queue */
             $('<iframe style="display: none;" class="upcut_queue_iframe" id="'+frame_id+'"></iframe>').load(function(){
@@ -600,6 +708,13 @@
                 
                 /* Listen out for input field file selection */
                 frame_cont.contents().find('input[type=file]').change(function() {
+                    /* Add new data item_id */
+                    var item_id = info._add_data_item();
+
+                    /* Add frame_id and queue_id to data item_id */
+                    info.data.items[item_id].frame_id = frame_id;
+                    info.data.items[item_id].queue_id = queue_id;
+
                     /* Add info to queue display */
                     info._add_file_to_queue(item_id, queue_id, this.files[0]);
 
@@ -629,7 +744,7 @@
         _check_html5: function() {
         	var info = this;
         	if (window.FormData) {
-				info.data.html5 = true;
+				info.options.html5 = true;
             } else {
                 /* If not html5 compatible disallow ability to be multi select */
                 info.options.multiple = false;
