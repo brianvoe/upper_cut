@@ -358,7 +358,7 @@
 
             /* Add queue container */
             var cont = '';
-            cont += '<div style="display: none;" class="upcut_queue_item" id="'+queue_id+'">';
+            cont += '<div class="upcut_queue_item" id="'+queue_id+'">';
             cont += '   <div class="upcut_queue_display"></div>'; /* Display */
             cont += '   <div class="upcut_queue_status"></div>'; /* Status */
             cont += '   <div style="clear: both;"></div>';
@@ -399,9 +399,6 @@
         _animate_progress: function(item_id, queue_id, speed, percent) {
             var info = this;
 
-            /* Make sure queue is showing */
-            info.data.main_cont.find('.upcut_queue #'+queue_id).slideDown('fast');
-
             info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_progress .upcut_progress_bar').animate({
                 width: percent+'%'
             }, speed, function() {
@@ -416,45 +413,57 @@
 
             /* Loop though each file and start processing */
             $.each(files, function(index, file) {
+                /* Add new queue */
+                var queue_id = info._unique_id();
+                info._add_to_queue(queue_id);
+                
+                /* Add new data item */
+                var item_id = info._add_data_item();
+                info.data.items[item_id].queue_id = queue_id;
+                
                 /* Validate each file */
-                if(info._validate_file(file)){
-                    $.ajax({
-                        url: info.options.upload_url,
-                        type: 'POST',
-                        data: file,
-                        processData: false,
-                        contentType: file.type,
-                        success: function() {
-                            console.log('Successful file upload');
-                        },
-                        error: function(e) {
-                            console.log(e);
-                        },
-                        xhr: function() {
-                            var myXhr = $.ajaxSettings.xhr();
-                            if(myXhr.upload){
-                                myXhr.upload.addEventListener('progress', showProgress, false);
-                                function showProgress(evt) {
-                                    console.log((evt.loaded / evt.total) * 100);
-                                }
-                            } else {
-                                console.log('Upload progress is not supported.');
-                            }
-                            return myXhr;
-                        }
-                    });
+                if(info._validate_file(file)) {
+                    if(info.options.auto_upload) { /* Upload file */
+                        info._start_html5_upload(item_id, file, queue_id);
+                    } else { /* Queue for later submission */
 
+                    }
                 } else {
                     /* Fail show file errors */
+                    info._remove_queue_item(item_id, queue_id);
                 }
             });
 
             return;
         },
-        _start_html5_upload: function() {
+        _start_html5_upload: function(item_id, file, queue_id) {
             var info = this;
 
-
+            $.ajax({
+                url: info.options.upload_url,
+                type: 'POST',
+                data: file,
+                processData: false,
+                contentType: file.type,
+                success: function() {
+                    console.log('Successful file upload');
+                },
+                error: function(e) {
+                    console.log(e);
+                },
+                xhr: function() {
+                    var myXhr = $.ajaxSettings.xhr();
+                    if(myXhr.upload){
+                        myXhr.upload.addEventListener('progress', showProgress, false);
+                        function showProgress(evt) {
+                            console.log((evt.loaded / evt.total) * 100);
+                        }
+                    } else {
+                        console.log('Upload progress is not supported.');
+                    }
+                    return myXhr;
+                }
+            });
         },
         /************************/
         /*** Iframe functions ***/
