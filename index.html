@@ -28,6 +28,9 @@
                 $('.clear_click').click(function(){
                     $('#image_upload').uppercut('clear');
                 });
+                $('.errors_click').click(function(){
+                    $('#image_upload').uppercut('errors');
+                });
             });
         </script>
     </head>
@@ -38,7 +41,8 @@
         <a class="destroy_click" href="javascript:;">Destroy</a>
         <br />
         <a class="browse_click" href="javascript:;">Browse</a> - 
-        <a class="clear_click" href="javascript:;">Clear</a>
+        <a class="clear_click" href="javascript:;">Clear</a> -
+        <a class="errors_click" href="javascript:;">Errors</a>
         <br /><br />
         <div id="image_upload"></div>
     </body>

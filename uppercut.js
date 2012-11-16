@@ -22,6 +22,8 @@
         auto_upload: true, /* Auto upload upon file select */
         uploaded_browse: true, /* Once single image is uploaded use recently uploaded image as clickable browse and hide original browse button */
         multiple: true, /* Whether or not its multiple select - If not html5 compatible it will be set to false */
+        max_upload: 5, /* Max amount of upload allowed */
+        debug: false, /* Console.log errors as they are added */
 
         /* Images */
         images_after_upload: true, /* Show images after upload and/or cropping */
@@ -73,7 +75,7 @@
             info.data = $.extend({}, upcut_data, {});
             
             /* Check if html5 */
-            //info._check_html5();
+            info._check_html5();
 
             /* Get or set id */
             if ($(input).attr('id')) {
@@ -89,6 +91,9 @@
 
             /* Add button container */
             info.data.main_cont.append('<div class="upcut_buttons"></div>');
+
+            /* Add general message */
+            info.data.main_cont.append('<div class="upcut_general_msg"></div>');
 
             /* Add div for holding hidden input fields */
             info.data.main_cont.append('<div class="upcut_inputs"></div>');
@@ -143,12 +148,12 @@
                 /* html5 upload creation */
 
                 /* Add hidden input file field */
-                info.data.main_cont.append('<input style="display: none;" '+(info.options.multiple ? 'multiple="multiple"' : '')+' class="upcut_input_upload" type="file" name="" />');
+                info.data.main_cont.append('<input style="display: none;" '+(info.options.multiple ? 'multiple="multiple"' : '')+' class="upcut_input_upload" type="file" name="'+info.options.upload_name+'" />');
 
                 /* Add change event to upload file */
                 info.data.main_cont.find('.upcut_input_upload').change(function(){
                     /* Process files */
-                    info._process_html5_files($(this)[0].files);
+                    info._process_html5_files(this.files);
 
                     $(this).val(''); /* Clear out input field */
                 });
@@ -202,6 +207,13 @@
 
             /* Destroy Data */
             $.removeData(this, 'uppercut');
+        },
+        errors: function() {
+            var info = ($.hasData(this) ? $(this).data('uppercut'): this);
+
+            if(typeof console != 'undefined') {
+                console.log(info.data.errors);
+            }
         },
         /***************************/
         /*** Data item functions ***/
@@ -260,6 +272,34 @@
             delete info.data.items[item_id];
         },
         /***********************/
+        /*** Error functions ***/
+        /***********************/
+        _add_error: function(key, value) {
+            var info = this;
+
+            info.data.errors[key] = value;
+
+            if(info.options.debug && typeof console != 'undefined') {
+                console.log(key+' - '+value);
+            }
+        },
+        /**************************/
+        /*** Messages functions ***/
+        /**************************/
+        _general_message: function(status, msg) {
+            var info = this;
+
+            info.data.main_cont.find('.upcut_general_msg').html('<div class="msg_'+status+'">'+msg+'</div>');
+
+            info.data.main_cont.find('.upcut_general_msg').slideDown('fast', function() {
+                setTimeout(function(){
+                    info.data.main_cont.find('.upcut_general_msg').slideUp('fast', function() {
+                        info.data.main_cont.find('.upcut_general_msg').html('');
+                    });
+                }, 3000);
+            });
+        },
+        /***********************/
         /*** Input functions ***/
         /***********************/
         _add_image_input: function(item_id, file_info) {
@@ -305,7 +345,9 @@
             image_thumb += '<div id="'+thumb_id+'" class="upcut_thumb">';
             image_thumb += '    <div class="upcut_thumb_img"><img style="max-width: '+info.options.images_width+'px; max-height: '+info.options.images_height+'px;" src="'+file_info.path+'" /></div>';
             image_thumb += '    <div class="upcut_thumb_tools">';
-            image_thumb += '        <div class="upcut_thumb_edit">'+info.options.images_edit_val+'</div>';
+            if(info.options.crop) {
+                image_thumb += '        <div class="upcut_thumb_edit">'+info.options.images_edit_val+'</div>';
+            }
             image_thumb += '        <div class="upcut_thumb_delete">'+info.options.images_delete_val+'</div>';
             image_thumb += '    </div>';
             image_thumb += '</div>';
@@ -370,6 +412,11 @@
 
             return;
         },
+        _update_queue_status: function(item_id, queue_id, status, msg) {
+            var info = this;
+
+            info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_'+status+'">'+msg+'</div>');
+        },
         _add_file_to_queue: function(item_id, queue_id, file_info) { /* Take selected file info and add to queue display */
             var info = this;
 
@@ -411,8 +458,22 @@
         _process_html5_files: function(files) {
             var info = this;
 
+            /* If multiple is false clear queue */
+            if(!info.options.multiple) {
+                info.clear();
+            }
+
+            /* Current number of files */
+            var current_count = Object.keys(info.data.items).length;
+
             /* Loop though each file and start processing */
             $.each(files, function(index, file) {
+                /* Validate max upload amount */
+                if(current_count >= info.options.max_upload) {
+                    info._general_message('error', 'Exceeded max file count');
+                    return;
+                }
+
                 /* Add new queue */
                 var queue_id = info._unique_id();
                 info._add_to_queue(queue_id);
@@ -420,10 +481,14 @@
                 /* Add new data item */
                 var item_id = info._add_data_item();
                 info.data.items[item_id].queue_id = queue_id;
+
+                /* Add info to queue display */
+                info._add_file_to_queue(item_id, queue_id, file);
                 
                 /* Validate each file */
                 if(info._validate_file(file)) {
                     if(info.options.auto_upload) { /* Upload file */
+                        /* Start uploading file */
                         info._start_html5_upload(item_id, file, queue_id);
                     } else { /* Queue for later submission */
 
@@ -432,6 +497,9 @@
                     /* Fail show file errors */
                     info._remove_queue_item(item_id, queue_id);
                 }
+
+                /* Add to files_count */
+                current_count++;
             });
 
             return;
@@ -439,27 +507,82 @@
         _start_html5_upload: function(item_id, file, queue_id) {
             var info = this;
 
+            /* Set form data */
+            var form_data = new FormData();
+            form_data.append(info.options.upload_name, file);
+
+            /* Make ajax request */
             $.ajax({
                 url: info.options.upload_url,
                 type: 'POST',
-                data: file,
+                data: form_data,
+                cache: false,
+                contentType: false,
                 processData: false,
-                contentType: file.type,
-                success: function() {
-                    console.log('Successful file upload');
+                success: function(return_info) {
+                    return_info = $.parseJSON(return_info);
+                    if(return_info.status == 'error') {
+                        /* Script returned error */
+                        info._update_queue_status(item_id, queue_id, 'error', return_info.info);
+
+                        /* Add error to array */
+                        info._add_error('html5_upload', return_info.info);
+
+                        /* Remove queue display */
+                        info._remove_queue_item(item_id, queue_id);
+                    } else {
+                        /* Success */
+                        info._update_queue_status(item_id, queue_id, 'sucess', 'Success!');
+
+                        /* Remove queue display */
+                        info._remove_queue_item(item_id, queue_id);
+
+                        /* Add file info to data item */
+                        info.data.items[item_id].orig_image.name = return_info.file.name;
+                        info.data.items[item_id].orig_image.path = return_info.file.path;
+                        info.data.items[item_id].orig_image.size = return_info.file.size;
+                        info.data.items[item_id].orig_image.height = return_info.file.height;
+                        info.data.items[item_id].orig_image.width = return_info.file.width;
+                        info.data.items[item_id].orig_image.type = return_info.file.type;
+
+                        /* If crop add image and initiate jcrop */
+                        if(info.options.crop && !info.options.multiple) {
+                            info._crop_start(item_id, return_info.file, false);
+                        } else {
+                            /* If no crop finalize upload and add hidden input field to final div location */
+                            info._add_image_input(item_id, return_info.file);
+
+                            /* Add thumbnail */
+                            info._add_image_thumbnail(item_id, return_info.file);
+                        }
+                    }
                 },
-                error: function(e) {
-                    console.log(e);
+                error: function(error) {
+                    /* Script returned error */
+                    info._update_queue_status(item_id, queue_id, 'error', error);
+
+                    /* Add error to array */
+                    info._add_error('html5_upload', error);
+
+                    /* Remove queue display */
+                    info._remove_queue_item(item_id, queue_id);
                 },
                 xhr: function() {
                     var myXhr = $.ajaxSettings.xhr();
                     if(myXhr.upload){
                         myXhr.upload.addEventListener('progress', showProgress, false);
-                        function showProgress(evt) {
-                            console.log((evt.loaded / evt.total) * 100);
+                        function showProgress(evt) {                           
+                            info._animate_progress(item_id, queue_id, 200, ((evt.loaded / evt.total) * 100));
                         }
                     } else {
-                        console.log('Upload progress is not supported.');
+                        /* Script returned error */
+                        info._update_queue_status(item_id, queue_id, 'error', 'Upload progress is not supported.');
+
+                        /* Add error to array */
+                        info._add_error('html5_upload', 'Upload progress is not supported.');
+
+                        /* Remove queue display */
+                        info._remove_queue_item(item_id, queue_id);
                     }
                     return myXhr;
                 }
@@ -475,47 +598,56 @@
             if(!info.options.multiple) {
                 info.clear();
             }
+            
+            /* Current number of files */
+            var current_count = Object.keys(info.data.items).length;
+            var files_count = Object.keys(files).length;
 
-            /* Set variables */
-            var frame_id = info._unique_id();
-            var frame_cont;
+            /* Validate max upload amount */
+            if(current_count >= info.options.max_upload) {
+                info._general_message('error', 'Exceeded max file count');
+            } else {
+                /* Set variables */
+                var frame_id = info._unique_id();
+                var frame_cont;
 
-            /* Add new addition to queue */
-            var queue_id = info._unique_id();
-            info._add_to_queue(queue_id);
+                /* Add new addition to queue */
+                var queue_id = info._unique_id();
+                info._add_to_queue(queue_id);
 
-            /* Create iframe and add to queue */
-            $('<iframe style="display: none;" class="upcut_queue_iframe" id="'+frame_id+'"></iframe>').load(function(){
-                var form_txt = '';
-                form_txt += '<form action="'+info.options.upload_url+'" method="post" enctype="multipart/form-data">';
-                form_txt += '   <input style="display: none;" type="file" name="'+info.options.upload_name+'" />';
-                form_txt += '</form>';
+                /* Create iframe and add to queue */
+                $('<iframe style="display: none;" class="upcut_queue_iframe" id="'+frame_id+'"></iframe>').load(function(){
+                    var form_txt = '';
+                    form_txt += '<form action="'+info.options.upload_url+'" method="post" enctype="multipart/form-data">';
+                    form_txt += '   <input style="display: none;" type="file" name="'+info.options.upload_name+'" />';
+                    form_txt += '</form>';
 
-                frame_cont = $('#'+frame_id);
-                frame_cont.contents().find('body').append(form_txt);
-                
-                /* Listen out for input field file selection */
-                frame_cont.contents().find('input[type=file]').change(function() {
-                    /* Add new data item_id */
-                    var item_id = info._add_data_item();
+                    frame_cont = $('#'+frame_id);
+                    frame_cont.contents().find('body').append(form_txt);
+                    
+                    /* Listen out for input field file selection */
+                    frame_cont.contents().find('input[type=file]').change(function() {
+                        /* Add new data item_id */
+                        var item_id = info._add_data_item();
 
-                    /* Add frame_id and queue_id to data item_id */
-                    info.data.items[item_id].frame_id = frame_id;
-                    info.data.items[item_id].queue_id = queue_id;
+                        /* Add frame_id and queue_id to data item_id */
+                        info.data.items[item_id].frame_id = frame_id;
+                        info.data.items[item_id].queue_id = queue_id;
 
-                    /* Add info to queue display */
-                    info._add_file_to_queue(item_id, queue_id, this.files[0]);
+                        /* Add info to queue display */
+                        info._add_file_to_queue(item_id, queue_id, this.files[0]);
 
-                    if(info.options.auto_upload) { /* Upload file */
-                        info._start_iframe_upload(item_id, this.files[0], frame_id, queue_id);
-                    } else { /* Queue for later submission */
+                        if(info.options.auto_upload) { /* Upload file */
+                            info._start_iframe_upload(item_id, this.files[0], frame_id, queue_id);
+                        } else { /* Queue for later submission */
 
-                    }
-                });
-            }).appendTo(info.data.main_cont.find('.upcut_queue #'+queue_id));
+                        }
+                    });
+                }).appendTo(info.data.main_cont.find('.upcut_queue #'+queue_id));
 
-            /* Click input field to select file */
-            frame_cont.contents().find('input[type=file]').click();
+                /* Click input field to select file */
+                frame_cont.contents().find('input[type=file]').click();
+            }
         },
         _start_iframe_upload: function(item_id, file_info, frame_id, queue_id) {
             var info = this;
@@ -534,9 +666,9 @@
                 
                 /* Process return info */
                 if(return_info.status == 'error') { /* Error */
-                    info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_error">'+return_info.info+'</div>');
+                    info._update_queue_status(item_id, queue_id, 'error', return_info.info);
                 } else { /* Success */
-                    info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_success">Sucess!</div>');
+                    info._update_queue_status(item_id, queue_id, 'sucess', 'Success!');
 
                     /* Remove queue display */
                     info._remove_queue_item(item_id, queue_id);
@@ -555,6 +687,9 @@
                     } else {
                         /* If no crop finalize upload and add hidden input field to final div location */
                         info._add_image_input(item_id, return_info.file);
+
+                        /* Add thumbnail */
+                        info._add_image_thumbnail(item_id, return_info.file);
                     }
                 }
             });
@@ -768,13 +903,13 @@
                             /* Close and remove crop */
                             info._crop_remove();
                         } else {
-                            info.data.errors.crop_submit = results.info;
+                            info._add_error('crop_submit', results.info);
                         }
                     }
                 });
             } else {
                 /* Crop url was not set */
-                info.data.errors.crop_submit = 'Crop url was not set';
+                info._add_error('crop_submit', 'Crop Url was not set');
             }
         },
         _crop_remove: function() {
@@ -898,6 +1033,14 @@ if(typeof Object.create !== 'function'){
         return new F();
     };
 }
+if (!Object.keys) Object.keys = function(o) {
+    if (o !== Object(o))
+        throw new TypeError('Object.keys called on a non-object');
+    var k=[],p;
+    for (p in o) if (Object.prototype.hasOwnProperty.call(o,p)) k.push(p);
+    return k;
+}
+
 
 
 /**

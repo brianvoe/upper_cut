@@ -1,10 +1,19 @@
 .upcut_cont {
-	width: 300px;
-	padding: 5px;
-	border: solid 1px #a6a6a6;
+	padding: 0;
+	margin: 0;
 	text-decoration: none;
 	font-size: 14px;
 	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.upcut_cont .upcut_general_msg {
+	display: none;
+	max-width: 300px;
+}
+.upcut_cont .upcut_general_msg .msg_error {
+	color: red;
+}
+.upcut_cont .upcut_general_msg .msg_success {
+	color: green;
 }
 .upcut_cont .upcut_btn {
 	display: inline-block;
@@ -83,6 +92,7 @@
 	
 }
 .upcut_cont .upcut_queue_item {
+	max-width: 300px;
 	margin: 5px 0px 10px 0px;
 	padding: 5px 10px 5px 10px;
 	border: solid 1px #999999;
