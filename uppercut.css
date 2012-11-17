@@ -4,6 +4,9 @@
 	text-decoration: none;
 	font-size: 14px;
 	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
 }
 .upcut_cont .upcut_general_msg {
 	display: none;

@@ -21,14 +21,14 @@
         html5: true, /* Whether or not to use html5 version of uploading - If browser is not capable it will be set to false */
         auto_upload: true, /* Auto upload upon file select */
         uploaded_browse: true, /* Once single image is uploaded use recently uploaded image as clickable browse and hide original browse button */
-        multiple: true, /* Whether or not its multiple select - If not html5 compatible it will be set to false */
+        multiple: false, /* Whether or not its multiple select - If not html5 compatible it will be set to false */
         max_upload: 5, /* Max amount of upload allowed */
         debug: false, /* Console.log errors as they are added */
 
         /* Images */
         images_after_upload: true, /* Show images after upload and/or cropping */
-        images_width: 75, /* Images width */
-        images_height: 75, /* Images height */
+        images_width: 75, /* Images max width */
+        images_height: 75, /* Images max height */
         images_edit_val: 'Edit', /* Value of edit button - false if dont want to show edit button */
         images_delete_val: 'Delete', /* Value of delete button - false if dont want to show delete button */
 
@@ -73,6 +73,10 @@
             /* Replace default options with requested options */
             info.options = $.extend({}, upcut_options, options);
             info.data = $.extend({}, upcut_data, {});
+
+            /* Reset data */
+            info.data.errors = {};
+            info.data.items = {};
             
             /* Check if html5 */
             info._check_html5();
@@ -123,8 +127,8 @@
                 info.browse();
             });
 
-            /* Add upload button */
-            if(info.options.upload_button) {
+            /* Add upload button - If true and auto_upload is false */
+            if(info.options.upload_button && !info.options.auto_upload) {
                 info.data.main_cont.find('.upcut_buttons').append('<div class="upcut_btn upcut_btn_upload">'+info.options.upload_button_text+'</div>');
 
                 /* Add click event for upload button */
@@ -206,7 +210,7 @@
             info.data.main_cont.removeClass('upcut_cont');
 
             /* Destroy Data */
-            $.removeData(this, 'uppercut');
+            $(this).removeData('uppercut');
         },
         errors: function() {
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
@@ -464,13 +468,13 @@
             }
 
             /* Current number of files */
-            var current_count = Object.keys(info.data.items).length;
+            var current_count = info._object_length(info.data.items);
 
             /* Loop though each file and start processing */
             $.each(files, function(index, file) {
                 /* Validate max upload amount */
                 if(current_count >= info.options.max_upload) {
-                    info._general_message('error', 'Exceeded max file count');
+                    info._general_message('error', 'Exceeded max file count of '+info.options.max_upload);
                     return;
                 }
 
@@ -600,8 +604,8 @@
             }
             
             /* Current number of files */
-            var current_count = Object.keys(info.data.items).length;
-            var files_count = Object.keys(files).length;
+            var current_count = info._object_length(info.data.items);
+            var files_count = info._object_length(files);
 
             /* Validate max upload amount */
             if(current_count >= info.options.max_upload) {
@@ -938,6 +942,17 @@
                 info.options.multiple = false;
             }
         },
+        _object_length: function(object) {
+            var count = 0;
+
+            for (i in object) {
+                if (object.hasOwnProperty(i)) {
+                    count++;
+                }
+            }
+
+            return count;
+        },
         _minimize_file_name: function(text, limit) {
             if(text.length <= limit) {
                 return text;
@@ -1032,13 +1047,6 @@ if(typeof Object.create !== 'function'){
         F.prototype = obj;
         return new F();
     };
-}
-if (!Object.keys) Object.keys = function(o) {
-    if (o !== Object(o))
-        throw new TypeError('Object.keys called on a non-object');
-    var k=[],p;
-    for (p in o) if (Object.prototype.hasOwnProperty.call(o,p)) k.push(p);
-    return k;
 }
 
 
