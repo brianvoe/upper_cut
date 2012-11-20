@@ -21,7 +21,7 @@
         html5: true, /* Whether or not to use html5 version of uploading - If browser is not capable it will be set to false */
         auto_upload: true, /* Auto upload upon file select */
         uploaded_browse: true, /* Once single image is uploaded use recently uploaded image as clickable browse and hide original browse button */
-        multiple: false, /* Whether or not its multiple select - If not html5 compatible it will be set to false */
+        multiple: true, /* Whether or not its multiple select - If not html5 compatible it will be set to false */
         max_upload: 5, /* Max amount of upload allowed */
         debug: false, /* Console.log errors as they are added */
 
@@ -165,7 +165,6 @@
                 /* Old school single image upload */
 
             }
-
         },
         browse: function() {
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
@@ -443,7 +442,9 @@
                     $(this).remove();
 
                     /* Remove queue_id from data item */
-                    info.data.items[item_id].queue_id = false;
+                    if(info.data.items[item_id] && info.data.items[item_id].queue_id) {
+                        info.data.items[item_id].queue_id = false;
+                    }
                 });
             }, 3000);
         },
@@ -781,7 +782,7 @@
             });
 
             /* Set Select - If update is true and coords are set */
-            if(update && info.data.items[item_id].crop_image.coords.x) {
+            if(update && info.data.items[item_id].crop_image.coords.x !== false) {
                 var crop_set_select = [
                     info.data.items[item_id].crop_image.coords.x,
                     info.data.items[item_id].crop_image.coords.y,
@@ -848,7 +849,7 @@
 
             /* Add event listener for not needing to crop and using full image */
             info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_crop_none').click(function() {
-                if(update && info.data.items[item_id].crop_image.coords.x) {
+                if(update && info.data.items[item_id].crop_image.coords.x !== false) {
                     /* Update input field */
                     info._update_image_input(item_id, info.data.items[item_id].input.id, image);
 
@@ -868,7 +869,7 @@
 
             /* Add event listener for crop submit */
             info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_crop_submit').click(function() {
-                info._crop_submit(item_id, image, crop_coords, (update && info.data.items[item_id].crop_image.coords.x ? true: false));
+                info._crop_submit(item_id, image, crop_coords, (update && info.data.items[item_id].crop_image.coords.x !== false ? true: false));
             });
         },
         _crop_submit: function(item_id, image_info, coords, update) {
