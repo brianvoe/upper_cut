@@ -76,6 +76,13 @@
 	padding: 3px;
 	margin: 10px 5px 0 0;
 }
+.upcut_cont .upcut_images .upcut_thumb .upcut_thumb_img {
+	cursor: move;
+	border: solid 1px #cccccc;
+	background-color: #ffffff;
+	padding: 3px;
+	margin: 0 0 3px 0;
+}
 .upcut_cont .upcut_images .upcut_thumb .upcut_thumb_tools {
 
 }
