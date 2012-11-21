@@ -166,6 +166,15 @@
                 /* Old school single image upload */
 
             }
+
+            /* Add sortable if jquery ui exists*/
+            if(jQuery().sortable) {
+                info.data.main_cont.find('.upcut_images')
+                .disableSelection()
+                .sortable({handle: '.upcut_thumb_img', stop: function(){
+                    info._move_image_thumbnail(item_id);
+                }});
+            }
         },
         browse: function() {
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
@@ -379,6 +388,15 @@
 
             /* Update thumbnail src */
             info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_img img').attr('src', file_info.path);
+        },
+        _move_image_thumbnail: function() {
+            var info = this;
+
+            /* Get order of images */
+
+            /* Update data order */
+
+            /* Update input field order */
         },
         _edit_image_thumbnail: function(item_id) {
             var info = this;
