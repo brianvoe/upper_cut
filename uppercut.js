@@ -60,7 +60,8 @@
         main_id: null, /* Main container id */
         main_cont: null, /* Main container */
         errors: {}, /* Associative array list errors */
-        items: {} /* Array for storing items */
+        items: {}, /* Array for storing items */
+        cur_order: 0 /* Current order number */
     };
 
     var uppercut_funcs = {
@@ -230,6 +231,7 @@
 
                 /* Set variables */
                 info.data.items[data_num] = {
+                    order: info.data.cur_order,
                     frame_id: false,
                     queue_id: false,
                     image_id: false,
@@ -266,6 +268,9 @@
                     }
                 };
             }
+
+            /* Increment current order */
+            info.data.cur_order++;
 
             return data_num;
         },
@@ -493,7 +498,6 @@
                 
                 /* Validate each file */
                 var validate = info._validate_file(file);
-                console.log(validate);
                 if(validate === true) {
                     if(info.options.auto_upload) { /* Upload file */
                         /* Start uploading file */
@@ -507,6 +511,9 @@
 
                     /* Remove queue */
                     info._remove_queue_item(item_id, queue_id);
+
+                    /* Remove data */
+                    info._remove_data_item(item_id);
                 }
 
                 /* Add to files_count */
@@ -543,7 +550,7 @@
                         info._remove_queue_item(item_id, queue_id);
                     } else {
                         /* Success */
-                        info._update_queue_status(item_id, queue_id, 'sucess', 'Success!');
+                        info._update_queue_status(item_id, queue_id, 'success', 'Success!');
 
                         /* Remove queue display */
                         info._remove_queue_item(item_id, queue_id);
@@ -662,6 +669,9 @@
 
                             /* Remove queue */
                             info._remove_queue_item(item_id, queue_id);
+
+                            /* Remove data */
+                            info._remove_data_item(item_id);
                         }
                     });
                 }).appendTo(info.data.main_cont.find('.upcut_queue #'+queue_id));
@@ -689,7 +699,7 @@
                 if(return_info.status == 'error') { /* Error */
                     info._update_queue_status(item_id, queue_id, 'error', return_info.info);
                 } else { /* Success */
-                    info._update_queue_status(item_id, queue_id, 'sucess', 'Success!');
+                    info._update_queue_status(item_id, queue_id, 'success', 'Success!');
 
                     /* Remove queue display */
                     info._remove_queue_item(item_id, queue_id);
@@ -714,7 +724,6 @@
                     }
                 }
             });
-
         },
         /**********************/
         /*** Crop functions ***/
