@@ -419,12 +419,13 @@
             var info = this;
 
             info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_'+status+'">'+msg+'</div>');
+
+            if(status == 'error') {
+                info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_progress').hide();
+            }
         },
         _add_file_to_queue: function(item_id, queue_id, file_info) { /* Take selected file info and add to queue display */
             var info = this;
-
-            /* Validate file */
-            info._validate_file(file_info);
 
             /* Add name to queue display */
             var text = '';
@@ -491,7 +492,9 @@
                 info._add_file_to_queue(item_id, queue_id, file);
                 
                 /* Validate each file */
-                if(info._validate_file(file)) {
+                var validate = info._validate_file(file);
+                console.log(validate);
+                if(validate === true) {
                     if(info.options.auto_upload) { /* Upload file */
                         /* Start uploading file */
                         info._start_html5_upload(item_id, file, queue_id);
@@ -500,6 +503,9 @@
                     }
                 } else {
                     /* Fail show file errors */
+                    info._update_queue_status(item_id, queue_id, 'error', validate);
+
+                    /* Remove queue */
                     info._remove_queue_item(item_id, queue_id);
                 }
 
@@ -642,10 +648,20 @@
                         /* Add info to queue display */
                         info._add_file_to_queue(item_id, queue_id, this.files[0]);
 
-                        if(info.options.auto_upload) { /* Upload file */
-                            info._start_iframe_upload(item_id, this.files[0], frame_id, queue_id);
-                        } else { /* Queue for later submission */
+                        /* Validate each file */
+                        var validate = info._validate_file(this.files[0]);
+                        if(validate === true) {
+                            if(info.options.auto_upload) { /* Upload file */
+                                info._start_iframe_upload(item_id, this.files[0], frame_id, queue_id);
+                            } else { /* Queue for later submission */
 
+                            }
+                        } else {
+                            /* Fail show file errors */
+                            info._update_queue_status(item_id, queue_id, 'error', validate);
+
+                            /* Remove queue */
+                            info._remove_queue_item(item_id, queue_id);
                         }
                     });
                 }).appendTo(info.data.main_cont.find('.upcut_queue #'+queue_id));
@@ -994,13 +1010,13 @@
             var valid = true;
             /* Make sure its a valid file type */
             if(!info._validate_file_type(file)){
-                alert('Invalid file type');
-                valid = false;
+                info._add_error('file_type', 'Invalid file type');
+                valid = 'Invalid file type';
             }
             /* Make sure it doesnt exceed file size */
             if(!info._validate_file_size(file)) {
-                alert('Exceeded max file size of '+info._size_in_text(info.options.max_file_size));
-                valid = false;
+                info._add_error('file_size', 'Exceeded max file size of '+info._size_in_text(info.options.max_file_size));
+                valid = 'Exceeded max file size of '+info._size_in_text(info.options.max_file_size);
             }
             return valid;
         },
