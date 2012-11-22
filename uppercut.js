@@ -639,10 +639,9 @@
                 xhr: function() {
                     var myXhr = $.ajaxSettings.xhr();
                     if(myXhr.upload){
-                        myXhr.upload.addEventListener('progress', showProgress, false);
-                        function showProgress(evt) {                           
+                        myXhr.upload.addEventListener('progress', function(evt) {                           
                             info._animate_progress(item_id, queue_id, 200, ((evt.loaded / evt.total) * 100));
-                        }
+                        }, false);
                     } else {
                         /* Script returned error */
                         info._update_queue_status(item_id, queue_id, 'error', 'Upload progress is not supported.');
@@ -858,6 +857,13 @@
             } else {
                 var crop_set_select = [(image.width / 2 - 100),(image.height / 2 - 100),(image.width / 2 + 100),(image.height / 2 + 100)];
             }
+
+            /* Set preview variables */
+            var preview_cont = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .uc_crop_preview');
+            var preview_div = preview_cont.find('div');
+            var preview_img = preview_div.find('img');
+            var preview_max_width = preview_cont.width();
+            var preview_max_height = preview_cont.height();
             
             /* Add jcrop */
             info.data.main_cont.find('#'+crop_image_id).Jcrop({
@@ -871,12 +877,7 @@
                 /* var jcrop = this; */
             });
 
-            /* Setup preview box */
-            var preview_cont = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .uc_crop_preview');
-            var preview_div = preview_cont.find('div');
-            var preview_img = preview_div.find('img');
-            var preview_max_width = preview_cont.width();
-            var preview_max_height = preview_cont.height();
+            /* Set preview crop coords */
             function crop_preview(coords) {
                 /* If no coords then return */
                 if (parseInt(coords.w) <= 0 || parseInt(coords.h) <= 0) return;
