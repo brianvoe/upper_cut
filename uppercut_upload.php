@@ -28,7 +28,8 @@
 	$file_width = 0;
 	$file_type = $_FILES[$name]['type'];
 	$file_path = $upload_path.$file_name;
-	$file_ext = explode('/', $file_type)[1];
+	$file_ext = explode('/', $file_type);
+	$file_ext = $file_ext[1];
 
 	// Validate
 	if(!in_array($file_ext, $allowed_types)) { // Check file types
