@@ -82,6 +82,12 @@
             /* Check if html5 */
             info._check_html5();
 
+            /* Check crop */
+            if(!info.options.crop_url) {
+                /* If no crop url set crop to false */
+                info.options.crop = false;
+            }
+
             /* Get or set id */
             if ($(input).attr('id')) {
                 info.data.main_id = $(input).attr('id');
