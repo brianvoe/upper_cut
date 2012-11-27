@@ -27,12 +27,16 @@
 	$file_height = 0;
 	$file_width = 0;
 	$file_type = $_FILES[$name]['type'];
+	if($file_type) {
+		$file_type = explode('/', $file_type);
+		$file_type = $file_type[1];
+	} else {
+		$file_type = substr(strrchr($file_name, '.'), 1);
+	}
 	$file_path = $upload_path.$file_name;
-	$file_ext = explode('/', $file_type);
-	$file_ext = $file_ext[1];
 
 	// Validate
-	if(!in_array($file_ext, $allowed_types)) { // Check file types
+	if(!in_array($file_type, $allowed_types)) { // Check file types
 		$return_info['status'] = 'error';
 		$return_info['info'] = 'File type is not allowed';
 	}
