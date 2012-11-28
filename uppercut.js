@@ -173,6 +173,15 @@
 
             }
         },
+        import: function(import_data) { /* Programmably allow user to import images via data */
+            var info = ($.hasData(this) ? $(this).data('uppercut'): this);
+
+            
+            /* Add new data item */
+            var item_id = info._add_data_item();
+
+            console.log(data_num);
+        },
         browse: function() {
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
 
@@ -230,50 +239,47 @@
         /***************************/
         _add_data_item: function() {
             var info = this;
-            var data_num;
 
-            while(typeof info.data.items[data_num] == 'undefined') {
-                data_num = Math.ceil(Math.random() * 100000);
+            var data_num = new Date().getTime();
 
-                /* Set variables */
-                info.data.items[data_num] = {
-                    order: info.data.cur_order,
-                    frame_id: false,
-                    queue_id: false,
-                    image_id: false,
-                    thumbnail: {
-                        id: false,
-                        src: false
+            /* Set variables */
+            info.data.items[data_num] = {
+                order: info.data.cur_order,
+                frame_id: false,
+                queue_id: false,
+                image_id: false,
+                thumbnail: {
+                    id: false,
+                    src: false
+                },
+                input: {
+                    id: false,
+                    val: false
+                },
+                orig_image: {
+                    name: false,
+                    path: false,
+                    size: false,
+                    height: false,
+                    width: false,
+                    type: false
+                },
+                crop_image: {
+                    crop_image_id: false,
+                    coords: {
+                        x: false,
+                        y: false,
+                        w: false,
+                        h: false
                     },
-                    input: {
-                        id: false,
-                        val: false
-                    },
-                    orig_image: {
-                        name: false,
-                        path: false,
-                        size: false,
-                        height: false,
-                        width: false,
-                        type: false
-                    },
-                    crop_image: {
-                        crop_image_id: false,
-                        coords: {
-                            x: false,
-                            y: false,
-                            w: false,
-                            h: false
-                        },
-                        name: false,
-                        path: false,
-                        size: false,
-                        height: false,
-                        width: false,
-                        type: false
-                    }
-                };
-            }
+                    name: false,
+                    path: false,
+                    size: false,
+                    height: false,
+                    width: false,
+                    type: false
+                }
+            };
 
             /* Increment current order */
             info.data.cur_order++;
@@ -1009,10 +1015,10 @@
         /*** Misc functions ***/
         /**********************/
         _unique_id: function() {
-            var unique_id = 'uc_'+Math.ceil(Math.random() * 100000);
+            var unique_id = 'uc_'+new Date().getTime();
 
             while ($('#'+unique_id).length) {
-                unique_id = 'uc_'+Math.ceil(Math.random() * 100000);
+                unique_id = 'uc_'+new Date().getTime();
             }
 
             return unique_id;

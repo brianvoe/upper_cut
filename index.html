@@ -25,6 +25,16 @@
                 $('.destroy_click').click(function(){
                     $('#image_upload').uppercut('destroy');
                 });
+                $('.import_click').click(function(){
+                    $('#image_upload').uppercut('import', {
+                        name: 'name.jpg',
+                        path: 'uploads/name.jpg',
+                        size: 10000,
+                        height: 100,
+                        width: 100,
+                        type: 'jpg'
+                    });
+                });
                 $('.browse_click').click(function(){
                     $('#image_upload').uppercut('browse');
                 });
@@ -42,6 +52,8 @@
         <h2>Advanced image upload and crop jquery plugin</h2>
         <a class="create_click" href="javascript:;">Create</a> - 
         <a class="destroy_click" href="javascript:;">Destroy</a>
+        <br />
+        <a class="import_click" href="javascript:;">Import</a>
         <br />
         <a class="browse_click" href="javascript:;">Browse</a> - 
         <a class="clear_click" href="javascript:;">Clear</a> -
