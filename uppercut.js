@@ -61,7 +61,9 @@
         main_cont: null, /* Main container */
         errors: {}, /* Associative array list errors */
         items: {}, /* Array for storing items */
-        cur_order: 0 /* Current order number */
+        cur_order: 0, /* Current order number */
+        /* Full allowed image types */
+        image_types: ['gif','png','jpg','jpeg','tiff','bmp']
     };
 
     var uppercut_funcs = {
@@ -176,11 +178,41 @@
         import: function(import_data) { /* Programmably allow user to import images via data */
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
 
-            
+            /* Current number of files */
+            var current_count = info._object_length(info.data.items);
+
+            /* Validate max upload amount */
+            if(current_count >= info.options.max_upload) {
+                info._general_message('error', 'Exceeded max file count of '+info.options.max_upload);
+                return;
+            }
+
+            /* Ensure they pass all file info needed */
+            if(!import_data.name || !import_data.path || !import_data.size || !import_data.height || !import_data.width || !import_data.type) {
+                info._general_message('error', 'Must send all file info data: name, path, size, height, width and type');
+                return;
+            }
+
+            /* Validate file */
+            var validate = info._validate_file(import_data);
+            if(validate !== true) {
+                info._general_message('error', validate);
+                return;
+            }
+
             /* Add new data item */
             var item_id = info._add_data_item();
 
-            console.log(data_num);
+            /* Add import data to to item data */
+            info.data.items[item_id].orig_image = import_data;
+
+            /* Add image thumbnail */
+            info._add_image_thumbnail(item_id, import_data);
+
+            /* Add input field */
+            info._add_image_input(item_id, import_data);
+
+            console.log(info.data.items);
         },
         browse: function() {
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
@@ -1098,13 +1130,25 @@
             var name = file.name;
             var ext = name.split('.').pop().toLowerCase();
             if($.inArray(ext, info.options.file_types) == -1) {
-                return false
+                /* Add error to array */
+                info._add_error('file_type', 'Not a valid image file. Allowed image types: '+info.options.file_types.join(', '));
+                return false;
+            }
+            if($.inArray(ext, info.data.image_types) == -1) {
+                /* Add error to array */
+                info._add_error('file_type', 'Not even a image file. General image types: '+info.data.image_types.join(', '));
+                return false;
             }
             return true;
         },
         _validate_file_size: function(file) {
             var info = this;
-            return (file.size > info.options.max_file_size ? false: true);
+            if(file.size > info.options.max_file_size) {
+                /* Add error to array */
+                info._add_error('file_size', 'Exceeded file size. Max file size is: '+info._size_in_text(info.options.max_file_size));
+                return false;
+            }
+            return true;
         }
     };
 

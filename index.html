@@ -10,8 +10,10 @@
         <script>
             $(document).ready(function(){
                 $('#image_upload').uppercut({
+                    debug: true,
                     upload_url: 'uppercut_upload.php',
                     crop_url: 'uppercut_crop.php',
+                    //max_file_size: 2 * (1024 * 1024), /* 2mb */
                     images_edit_val: '<img style="padding-left: 18px;" src="http://cdn1.iconfinder.com/data/icons/diagona/icon/16/018.png" />',
                     images_delete_val: '<img style="padding-left: 10px;" src="http://cdn1.iconfinder.com/data/icons/diagona/icon/16/101.png" />'
                     //browse_image: 'http://www.google.com/images/logo.gif'
@@ -27,12 +29,12 @@
                 });
                 $('.import_click').click(function(){
                     $('#image_upload').uppercut('import', {
-                        name: 'name.jpg',
-                        path: 'uploads/name.jpg',
-                        size: 10000,
-                        height: 100,
-                        width: 100,
-                        type: 'jpg'
+                        name: 'logo3w.png',
+                        path: 'https://www.google.com/images/srpr/logo3w.png',
+                        size: 6000, /* Actual file size */
+                        height: 95, /* Actual file height - for proper cropping */
+                        width: 275, /* Actual file width - for proper cropping */
+                        type: 'png'
                     });
                 });
                 $('.browse_click').click(function(){
