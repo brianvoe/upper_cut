@@ -90,6 +90,15 @@
                 info.options.crop = false;
             }
 
+            /* Deal with stupid internet explorer */
+            if ($.browser.msie) {
+                /* Force iframe upload */
+                info.options.html5 = false;
+
+                /* Add error to array */
+                info._add_error('using_ie', 'For some reason your using internet explorer');
+            }
+
             /* Get or set id */
             if ($(input).attr('id')) {
                 info.data.main_id = $(input).attr('id');
@@ -175,7 +184,7 @@
 
             }
         },
-        import: function(import_data) { /* Programmably allow user to import images via data */
+        add: function(import_data) { /* Programmably allow user to import images via data */
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
 
             /* Current number of files */
@@ -212,7 +221,7 @@
             /* Add input field */
             info._add_image_input(item_id, import_data);
 
-            console.log(info.data.items);
+            //console.log(info.data.items);
         },
         browse: function() {
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
@@ -713,7 +722,6 @@
             
             /* Current number of files */
             var current_count = info._object_length(info.data.items);
-            var files_count = info._object_length(files);
 
             /* Validate max upload amount */
             if(current_count >= info.options.max_upload) {
@@ -730,7 +738,7 @@
                 /* Create iframe and add to queue */
                 $('<iframe style="display: none;" class="upcut_queue_iframe" id="'+frame_id+'"></iframe>').load(function(){
                     var form_txt = '';
-                    form_txt += '<form action="'+info.options.upload_url+'" method="post" enctype="multipart/form-data">';
+                    form_txt += '<form src="about:blank" action="'+info.options.upload_url+'" method="post" enctype="multipart/form-data">';
                     form_txt += '   <input style="display: none;" type="file" name="'+info.options.upload_name+'" />';
                     form_txt += '</form>';
 
@@ -771,7 +779,10 @@
                 }).appendTo(info.data.main_cont.find('.upcut_queue #'+queue_id));
 
                 /* Click input field to select file */
-                frame_cont.contents().find('input[type=file]').click();
+                setTimeout(function(){
+                    alert('hello');
+                    frame_cont.contents().find('input[type=file]').click();
+                }, 1000);
             }
         },
         _start_iframe_upload: function(item_id, file_info, frame_id, queue_id) {
