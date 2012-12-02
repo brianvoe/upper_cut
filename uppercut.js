@@ -223,8 +223,6 @@
 
             /* Add input field */
             info._add_image_input(item_id, import_data);
-
-            //console.log(info.data.items);
         },
         browse: function() {
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
@@ -823,8 +821,6 @@
                 return_info = $.parseJSON(iframe_cont.contents().find('body').html());
                 iframe_cont.unbind('load');
                 iframe_cont.remove(); /* Delete iframe */
-
-                //console.log(iframe_cont.contents().find('body').html());
                 
                 /* Process return info */
                 if(return_info.status == 'error') { /* Error */
@@ -844,7 +840,7 @@
                     info.data.items[item_id].orig_image.type = return_info.file.type;
 
                     /* If crop add image and initiate jcrop */
-                    if(info.options.crop) {
+                    if(info.options.crop && !info.options.multiple) {
                         info._crop_start(item_id, return_info.file, false);
                     } else {
                         /* If no crop finalize upload and add hidden input field to final div location */
