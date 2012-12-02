@@ -14,8 +14,10 @@
 	 
 	// Get image width and height
 	list($image_width, $image_height, $image_type, $image_attr) = getimagesize($image_path);
-    $image_type = getimagesize($image_path)['mime'];
-    $image_ext = explode('/', $image_type)[1];
+    $image_type = getimagesize($image_path);
+    $image_type = $image_type['mime'];
+    $image_ext = explode('/', $image_type);
+    $image_ext = $image_ext[1];
 	 
 	// Crop image
 	$canvas = imagecreatetruecolor($crop_w, $crop_h);
@@ -42,8 +44,10 @@
 
 	// Get file height and width
 	list($image_width, $image_height, $image_type, $image_attr) = getimagesize($image_path);
-    $image_type = getimagesize($image_path)['mime'];
-	$image_ext = explode('/', $image_type)[1];
+    $image_type = getimagesize($image_path);
+    $image_type = $image_type['mime'];
+    $image_ext = explode('/', $image_type);
+    $image_ext = $image_ext[1];
 
 	// Return file info
 	echo json_encode(array(
