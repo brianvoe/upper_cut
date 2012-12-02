@@ -1,7 +1,7 @@
 <?php
 
 	// Options
-	$allowed_types = array('jpg','jpeg','gif','bmp','png'); // Allowed file types
+	$allowed_types = array('jpg','jpeg','pjpeg','gif','bmp','png','x-png'); // Allowed file types
 	$max_size = 10 * (1024 * 1024); // Maximum filesize in bytes (currently 10MB).
 	$upload_path = 'uploads/'; // Upload location - trailing slash
 

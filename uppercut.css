@@ -19,6 +19,7 @@
 	color: green;
 }
 .upcut_cont .upcut_btn {
+	*max-width: 80px;
 	display: inline-block;
 	outline: none;
 	cursor: pointer;
@@ -148,7 +149,6 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgb(0, 0, 0);
 	background: rgba(0, 0, 0, 0.3);
     z-index: 10000;
 }
