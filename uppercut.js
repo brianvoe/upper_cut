@@ -52,7 +52,10 @@
 
         /* Validations */
         max_file_size: 10 * (1024 * 1024), /* Max file size in bytes - default 10mb */
-        file_types: ['gif','png','jpg','jpeg'] /* Allowed file upload types */
+        file_types: ['gif','png','jpg','jpeg'], /* Allowed file upload types */
+
+        /* Misc */
+        ie_img_cache: true /* Add timestampe to end of img src to bypass ie image cache issue */
     };
 
     /* Datas */
@@ -423,7 +426,7 @@
             var image_thumb = '';
             image_thumb += '<div id="'+thumb_id+'" class="upcut_thumb">';
             image_thumb += '    <div class="upcut_thumb_img" style="width: '+info.options.images_width+'px; height: '+info.options.images_height+'px;">';
-            image_thumb += '        <img style="max-width: '+info.options.images_width+'px; max-height: '+info.options.images_height+'px;" src="'+file_info.path+'" />';
+            image_thumb += '        <img style="max-width: '+info.options.images_width+'px; max-height: '+info.options.images_height+'px;" src="'+file_info.path+(info.options.ie_img_cache && $.browser.msie ? '?'+new Date().getTime():'')+'" />';
             image_thumb += '    </div>';
             image_thumb += '    <div class="upcut_thumb_tools">';
             image_thumb += '        <div '+(info.options.crop ? '': 'style="display: none;"')+' class="upcut_thumb_edit">'+info.options.images_edit_val+'</div>';
@@ -465,7 +468,7 @@
             info.data.items[item_id].thumbnail.src = file_info.path;
 
             /* Update thumbnail src */
-            info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_img img').attr('src', file_info.path);
+            info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_img img').attr('src', file_info.path+(info.options.ie_img_cache && $.browser.msie ? '?'+new Date().getTime():''));
         },
         _move_image_thumbnail: function(item_id) {
             var info = this;
