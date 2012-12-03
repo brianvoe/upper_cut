@@ -37,6 +37,9 @@
                         type: 'png'
                     });
                 });
+                $('.data_click').click(function(){
+                    $('#image_upload').uppercut('data');
+                });
                 $('.browse_click').click(function(){
                     $('#image_upload').uppercut('browse');
                 });
@@ -55,7 +58,8 @@
         <a class="create_click" href="javascript:;">Create</a> - 
         <a class="destroy_click" href="javascript:;">Destroy</a>
         <br />
-        <a class="import_click" href="javascript:;">Import</a>
+        <a class="import_click" href="javascript:;">Import</a> - 
+        <a class="data_click" href="javascript:;">Data</a>
         <br />
         <a class="browse_click" href="javascript:;">Browse</a> - 
         <a class="clear_click" href="javascript:;">Clear</a> -
