@@ -55,10 +55,10 @@
         'file' => array(
             'name' => $image_name, 
             'path' => $image_path, 
-            'size' => '', 
+            'size' => filesize($image_path), 
             'height' => $image_height, 
             'width' => $image_height, 
-            'type' => $image_type
+            'type' => $image_ext
         ), 
         'info' => ''
     ));
