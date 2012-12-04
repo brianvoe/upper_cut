@@ -20,7 +20,6 @@
         /* Preferences */
         html5: true, /* Whether or not to use html5 version of uploading - If browser is not capable it will be set to false */
         auto_upload: true, /* Auto upload upon file select */
-        uploaded_browse: true, /* Once single image is uploaded use recently uploaded image as clickable browse and hide original browse button */
         multiple: true, /* Whether or not its multiple select - If not html5 compatible it will be set to false */
         max_upload: 5, /* Max amount of upload allowed */
         debug: false, /* Console.log errors as they are added */
@@ -50,6 +49,7 @@
         /* Browse button */
         browse_text: 'Browse', /* Text of default button */
         browse_image: false, /* Image location of browse button */
+        browse_primary: false, /* Use browse button for primary image - Must be single use only */
 
         /* Display Progress */
         name_char_limit: 20, /* Character limit of display name */
@@ -142,7 +142,20 @@
             /* Add upload click button */
             if(info.options.browse_image){
                 /* Load image for button */
-                info.data.main_cont.find('.upcut_buttons').append('<div class="upcut_browse upcut_image_browse"><img src="'+info.options.browse_image+'" /></div>');
+                var browse_image_value = (info.options.browse_image.indexOf('<img') !== -1 ? info.options.browse_image: '<img src="'+info.options.browse_image+'" />');
+                info.data.main_cont.find('.upcut_buttons').append('<div class="upcut_browse upcut_image_browse">'+browse_image_value+'</div>');
+                
+                /* Set height and width of upcut_image_browse */
+                info.data.main_cont.find('.upcut_buttons .upcut_image_browse img').load(function(){
+                    $(this).css({
+                        'max-height': (info.options.images_height)+'px',
+                        'max-width': (info.options.images_width)+'px'
+                    });
+                    $(this).parent().css({
+                        'max-height': (info.options.images_height)+'px',
+                        'max-width': (info.options.images_width)+'px'
+                    });
+                });
             } else {
                 /* Load css style browse button */
                 info.data.main_cont.find('.upcut_buttons').append('<div class="upcut_browse upcut_btn upcut_btn_browse">'+info.options.browse_text+'</div>');
@@ -427,43 +440,58 @@
             info.data.items[item_id].thumbnail.id = thumb_id;
             info.data.items[item_id].thumbnail.src = file_info.path;
 
-            /* Put together thumb div */
-            var image_thumb = '';
-            image_thumb += '<div id="'+thumb_id+'" class="upcut_thumb">';
-            image_thumb += '    <div class="upcut_thumb_img" style="width: '+info.options.images_width+'px; height: '+info.options.images_height+'px;">';
-            image_thumb += '        <img style="max-width: '+info.options.images_width+'px; max-height: '+info.options.images_height+'px;" src="'+file_info.path+(info.options.ie_img_cache && $.browser.msie ? '?'+new Date().getTime():'')+'" />';
-            image_thumb += '    </div>';
-            image_thumb += '    <div class="upcut_thumb_tools">';
-            image_thumb += '        <div '+(info.options.crop ? '': 'style="display: none;"')+' class="upcut_thumb_edit">'+info.options.images_edit_val+'</div>';
-            image_thumb += '        <div class="upcut_thumb_delete">'+info.options.images_delete_val+'</div>';
-            image_thumb += '    </div>';
-            image_thumb += '</div>';
-            info.data.main_cont.find('.upcut_images').append(image_thumb);
+            if(info.options.browse_primary && !info.options.multiple) {
+                /* Use browse image as primary image */
+                info.data.main_cont.find('.upcut_buttons .upcut_image_browse img').attr('src', file_info.path+(info.options.ie_img_cache && $.browser.msie ? '?'+new Date().getTime():''));
 
-            /* Center image */
-            var thumb_img = info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_img img').load(function() {
-                thumb_img.css({
-                    'margin-top': Math.ceil((info.options.images_height-thumb_img.height()) / 2)+'px',
-                    'margin-left': Math.ceil((info.options.images_width-thumb_img.width()) / 2)+'px'
+                /* Add event listener for edit */
+                info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_edit').click(function(){
+                    info._edit_image_thumbnail(item_id);
                 });
-            });
 
-            /* Add event listener for edit */
-            info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_edit').click(function(){
-                info._edit_image_thumbnail(item_id);
-            });
+                /* Add event listener for delete */
+                info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_delete').click(function(){
+                    info._remove_image_thumbnail(item_id);
+                });
+            } else {
+                /* Put together thumb div */
+                var image_thumb = '';
+                image_thumb += '<div id="'+thumb_id+'" class="upcut_thumb">';
+                image_thumb += '    <div class="upcut_thumb_img" style="width: '+info.options.images_width+'px; height: '+info.options.images_height+'px;">';
+                image_thumb += '        <img style="max-width: '+info.options.images_width+'px; max-height: '+info.options.images_height+'px;" src="'+file_info.path+(info.options.ie_img_cache && $.browser.msie ? '?'+new Date().getTime():'')+'" />';
+                image_thumb += '    </div>';
+                image_thumb += '    <div class="upcut_thumb_tools">';
+                image_thumb += '        <div '+(info.options.crop ? '': 'style="display: none;"')+' class="upcut_thumb_edit">'+info.options.images_edit_val+'</div>';
+                image_thumb += '        <div class="upcut_thumb_delete">'+info.options.images_delete_val+'</div>';
+                image_thumb += '    </div>';
+                image_thumb += '</div>';
+                info.data.main_cont.find('.upcut_images').append(image_thumb);
 
-            /* Add event listener for delete */
-            info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_delete').click(function(){
-                info._remove_image_thumbnail(item_id);
-            });
+                /* Center image */
+                var thumb_img = info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_img img').load(function() {
+                    thumb_img.css({
+                        'margin-top': Math.ceil((info.options.images_height-thumb_img.height()) / 2)+'px',
+                        'margin-left': Math.ceil((info.options.images_width-thumb_img.width()) / 2)+'px'
+                    });
+                });
 
-            /* Add sortable if jquery ui exists*/
-            if(jQuery().sortable) {
-                info.data.main_cont.find('.upcut_images').disableSelection()
-                .sortable({handle: '.upcut_thumb_img', stop: function(){
-                    info._move_image_thumbnail(item_id);
-                }});
+                /* Add event listener for edit */
+                info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_edit').click(function(){
+                    info._edit_image_thumbnail(item_id);
+                });
+
+                /* Add event listener for delete */
+                info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_delete').click(function(){
+                    info._remove_image_thumbnail(item_id);
+                });
+
+                /* Add sortable if jquery ui exists*/
+                if(jQuery().sortable) {
+                    info.data.main_cont.find('.upcut_images').disableSelection()
+                    .sortable({handle: '.upcut_thumb_img', stop: function(){
+                        info._move_image_thumbnail(item_id);
+                    }});
+                }
             }
         },
         _update_image_thumbnail: function(item_id, thumb_id, file_info) {
