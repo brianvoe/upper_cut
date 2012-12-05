@@ -95,11 +95,8 @@ function crop() {
     $crop_h = $_POST['h'];
     $crop_w = $_POST['w'];
     $upload_path = 'crops/'; // Crops location - trailing slash
-    // Thumbnail settings
+    
     $thumbnail = true;
-    $thumbnail_path = 'thumbnails/';
-    $thumbnail_height = 150;
-    $thumbnail_width = 150;
 
     // Copy to new folder
     copy($image_path, $upload_path . $image_name);
@@ -152,84 +149,63 @@ function crop() {
             'name' => $image_name,
             'path' => $image_path,
             'size' => filesize($image_path),
-            'height' => $image_height,
             'width' => $image_width,
+            'height' => $image_height,
             'type' => $image_ext
         ),
         'info' => ''
     );
 
+    if($thumbnail){
+        $return_info['thumbnail'] = thumbnail($image_name, $image_path, $image_width, $image_height, $image_ext);
+    }
+
     echo json_encode($return_info);
 }
 
-function thumbnail() {
-    // Create thumbnail to also send back
-    // Copy to new folder
-    copy($image_path, $thumbnail_path . $image_name);
-    $image_path = $thumbnail_path . $image_name;
+function thumbnail($image_name, $image_path, $image_width, $image_height, $image_ext) {
+    // Thumbnail settings
+    $thumbnail_path = 'thumbnails/';
+    $thumbnail_height = 150;
+    $thumbnail_width = 150;
+
+    // Start new class
+    $thumb = new edit_image();
+
+    // Resize to new folder
+    $thumb->load($image_path);
+    if($image_width > $image_height) {
+        $thumb->resizeToWidth($thumbnail_width);
+    } else {
+        $thumb->resizeToHeight($thumbnail_height);
+    }
+    $thumb->save($thumbnail_path.$image_name);
 
     // Set permissions
-    chmod($image_path, 0777);
+    chmod($thumbnail_path.$image_name, 0777);
 
-    // Get ratio
-    if ($image_width > $image_height) {
-        //$thumbnail_height = $thumbnail_height * ($image_width / $image_height);
-        $thumbnail_width = $image_width = $image_width * ($thumbnail_height / $image_height);
-    } else {
-        //$thumbnail_width = $thumbnail_width * ($thumbnail_width / $image_width);
-        $thumbnail_height = $image_height = $image_height * ($thumbnail_width / $image_width);
-    }
-
-    // Set Canvas
-    $canvas = imagecreatetruecolor($thumbnail_width, $thumbnail_height);
-
-    // function resizeToHeight($height) {
-    //     $ratio = $height / $this->getHeight();
-    //     $width = $this->getWidth() * $ratio;
-    //     $this->resize($width,$height);
-    // }
-    // function resizeToWidth($width) {
-    //     $ratio = $width / $this->getWidth();
-    //     $height = $this->getheight() * $ratio;
-    //     $this->resize($width,$height);
-    // }
-    // Save Image
-    switch ($image_ext) {
-        case 'jpg':
-        case 'jpeg':
-            $current_image = imagecreatefromjpeg($image_path);
-            //imagecopy($canvas, $current_image, 0, 0, $crop_x, $crop_y, $image_width, $image_height);
-            imagecopyresized($canvas, $current_image, 0, 0, 0, 0, $thumbnail_width, $thumbnail_height, $image_width, $image_height);
-            imagejpeg($canvas, $image_path, 100);
-            break;
-        case 'gif':
-            $current_image = imagecreatefromgif($image_path);
-            //imagecopy($canvas, $current_image, 0, 0, $crop_x, $crop_y, $image_width, $image_height);
-            imagecopyresized($canvas, $current_image, 0, 0, 0, 0, $thumbnail_width, $thumbnail_height, $image_width, $image_height);
-            imagegif($canvas, $image_path);
-            break;
-        case 'png':
-            $current_image = imagecreatefrompng($image_path);
-            //imagecopy($canvas, $current_image, 0, 0, $crop_x, $crop_y, $image_width, $image_height);
-            imagecopyresized($canvas, $current_image, 0, 0, 0, 0, $thumbnail_width, $thumbnail_height, $image_width, $image_height);
-            imagepng($canvas, $image_path, 9);
-            break;
-    }
-
-    $return_info['thumbnail'] = array(
+    return array(
         'name' => $image_name,
-        'path' => $image_path,
-        'size' => filesize($image_path),
-        'height' => $thumbnail_height,
-        'width' => $thumbnail_width,
+        'path' => $thumbnail_path.$image_name,
+        'size' => filesize($thumbnail_path.$image_name),
+        'width' => $thumb->getWidth(),
+        'height' => $thumb->getHeight(),
         'type' => $image_ext
     );
 }
 
+
+/*
+* File: SimpleImage.php
+* Author: Simon Jarvis
+* Copyright: 2006 Simon Jarvis
+* Date: 08/11/06
+* Link: http://www.white-hat-web-design.co.uk/articles/php-image-resizing.php
+*/
 class edit_image {
 
-    var $image;
-    var $image_type;
+    public $image;
+    public $image_type;
 
     function load($filename) {
         $image_info = getimagesize($filename);
@@ -239,53 +215,42 @@ class edit_image {
         } elseif ($this->image_type == IMAGETYPE_GIF) {
             $this->image = imagecreatefromgif($filename);
         } elseif ($this->image_type == IMAGETYPE_PNG) {
-
             $this->image = imagecreatefrompng($filename);
         }
     }
 
-    function save($filename, $image_type = IMAGETYPE_JPEG, $compression = 75, $permissions = null) {
-
+    function save($filename, $image_type = IMAGETYPE_JPEG, $compression = 100, $permissions = null) {
         if ($image_type == IMAGETYPE_JPEG) {
             imagejpeg($this->image, $filename, $compression);
         } elseif ($image_type == IMAGETYPE_GIF) {
-
             imagegif($this->image, $filename);
         } elseif ($image_type == IMAGETYPE_PNG) {
-
             imagepng($this->image, $filename);
         }
         if ($permissions != null) {
-
             chmod($filename, $permissions);
         }
     }
 
     function output($image_type = IMAGETYPE_JPEG) {
-
         if ($image_type == IMAGETYPE_JPEG) {
             imagejpeg($this->image);
         } elseif ($image_type == IMAGETYPE_GIF) {
-
             imagegif($this->image);
         } elseif ($image_type == IMAGETYPE_PNG) {
-
             imagepng($this->image);
         }
     }
 
     function getWidth() {
-
         return imagesx($this->image);
     }
 
     function getHeight() {
-
         return imagesy($this->image);
     }
 
     function resizeToHeight($height) {
-
         $ratio = $height / $this->getHeight();
         $width = $this->getWidth() * $ratio;
         $this->resize($width, $height);
@@ -303,10 +268,24 @@ class edit_image {
         $this->resize($width, $height);
     }
 
-    function resize($width, $height) {
+    function resize($width,$height) {
         $new_image = imagecreatetruecolor($width, $height);
+        if( $this->image_type == IMAGETYPE_GIF || $this->image_type == IMAGETYPE_PNG ) {
+            $current_transparent = imagecolortransparent($this->image);
+            if($current_transparent != -1) {
+                $transparent_color = imagecolorsforindex($this->image, $current_transparent);
+                $current_transparent = imagecolorallocate($new_image, $transparent_color['red'], $transparent_color['green'], $transparent_color['blue']);
+                imagefill($new_image, 0, 0, $current_transparent);
+                imagecolortransparent($new_image, $current_transparent);
+            } elseif( $this->image_type == IMAGETYPE_PNG) {
+                imagealphablending($new_image, false);
+                $color = imagecolorallocatealpha($new_image, 0, 0, 0, 127);
+                imagefill($new_image, 0, 0, $color);
+                imagesavealpha($new_image, true);
+            }
+        }
         imagecopyresampled($new_image, $this->image, 0, 0, 0, 0, $width, $height, $this->getWidth(), $this->getHeight());
-        $this->image = $new_image;
+        $this->image = $new_image;  
     }
 
 }
