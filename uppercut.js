@@ -38,7 +38,7 @@
         crop: true, /* Whether or not to crop image after upload - If true, multiple will be set to false */
         crop_title: 'Crop Image', /* Title of crop dialog box show at top of crop box */
         crop_square: false, /* Whether or not to keep square 1 by 1 aspect ratio */
-        crop_force: true, /* When uploading disable multiple image selection (cause we would want to make the user crop after each upload) but allow multiple images to be uploaded */
+        crop_force: false, /* When uploading disable multiple image selection (cause we would want to make the user crop after each upload) but allow multiple images to be uploaded */
 
         /* Buttons */
         upload_button: true, /* Whether or not to show upload button for processing queue */
@@ -836,14 +836,10 @@
                 }).appendTo(info.data.main_cont.find('.upcut_queue #'+queue_id));
 
                 /* Click input field to select file */
-                if ($.browser.msie) {
-                    /* Set timeout for ie */
-                    setTimeout(function(){
-                        iframe_cont.contents().find('input[type=file]').click();
-                    }, 500);
-                } else {
+                /* Set timeout this is a fix for ie and firefox */
+                setTimeout(function(){
                     iframe_cont.contents().find('input[type=file]').click();
-                }
+                }, 500);
             }
         },
         _start_iframe_upload: function(item_id, file_info, frame_id, iframe_cont, queue_id) {

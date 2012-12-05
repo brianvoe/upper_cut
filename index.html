@@ -11,10 +11,12 @@
             $(document).ready(function(){
                 $('#image_upload').uppercut({
                     debug: true,
+                    max_upload: 50,
                     upload_url: 'uppercut_upload.php',
                     crop_url: 'uppercut_crop.php',
                     clear_button: false,
-                    multiple: false,
+                    crop_force: false,
+                    multiple: true,
                     browse_primary: true,
                     //max_file_size: 2 * (1024 * 1024), /* 2mb */
                     images_edit_val: '<img style="padding-left: 18px;" src="http://cdn1.iconfinder.com/data/icons/diagona/icon/16/018.png" />',
