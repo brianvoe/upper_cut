@@ -41,7 +41,7 @@
         crop_force: false, /* When uploading disable multiple image selection (cause we would want to make the user crop after each upload) but allow multiple images to be uploaded */
 
         /* Buttons */
-        clear_button: true, /* Whether or not to show clear button */
+        clear_button: false, /* Whether or not to show clear button */
         clear_button_text: 'Clear', /* Text for clear button */
 
         /* Browse button */
