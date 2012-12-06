@@ -11,7 +11,7 @@ function upload() {
     // Options
     $allowed_types = array('jpg', 'jpeg', 'pjpeg', 'gif', 'bmp', 'png', 'x-png'); // Allowed file types
     $max_size = 10 * (1024 * 1024); // Maximum filesize in bytes (currently 10MB).
-    $upload_path = 'uploads/'; // Upload location - trailing slash
+    $upload_path = 'images/uploads/'; // Upload location - trailing slash
 
     // Should we send back a thumbnail
     $thumbnail = true;
@@ -59,34 +59,30 @@ function upload() {
         $return_info['status'] = 'error';
         $return_info['info'] = 'Upload directory is not writable';
     }
+    if(!is_writable('images/uploads/') || !is_writable('images/crops/') || !is_writable('images/thumbnails/')) { // Check to make sure image folders are writeable
+        $return_info['status'] = 'error';
+        $return_info['info'] = 'Make sure images folders are writeable';
+    }
 
     // Upload file
     if ($return_info['status'] != 'error') {
-        $move_file = move_uploaded_file($file_temp, $file_path);
-        if (!$move_file) {
-            $return_info['status'] = 'error';
-            $return_info['info'] = 'There was a problem moving image.';
-        } else {
-            // Set permissions
-            chmod($file_path, 0777);
+        $original = new edit_image();
+        $original->load($file_temp);
+        $original->save($file_path);
 
-            // Get file height and width
-            list($file_width, $file_height, $type, $attr) = getimagesize($file_path);
+        $return_info['status'] = 'success';
+        $return_info['file'] = array(
+            'name' => $file_name,
+            'path' => $file_path,
+            'size' => filesize($file_path),
+            'width' => $original->getWidth(),
+            'height' => $original->getHeight(),
+            'type' => $original->getType()
+        );
+        $return_info['info'] = '';
 
-            $return_info['status'] = 'success';
-            $return_info['file'] = array(
-                'name' => $file_name,
-                'path' => $file_path,
-                'size' => $file_size,
-                'width' => $file_width,
-                'height' => $file_height,
-                'type' => $file_type
-            );
-            $return_info['info'] = '';
-
-            if($thumbnail){
-                $return_info['thumbnail'] = thumbnail($file_name, $file_path, $file_width, $file_height, $file_type);
-            }
+        if($thumbnail){
+            $return_info['thumbnail'] = thumbnail($file_name, $file_path, $file_width, $file_height, $file_type);
         }
     }
 
@@ -98,83 +94,46 @@ function crop() {
     // Grab crop post variables
     $image_path = $_POST['image_path'];
     $image_name = $_POST['image_name'];
+    $crop_w = $_POST['w'];
+    $crop_h = $_POST['h'];
     $crop_x = $_POST['x'];
     $crop_y = $_POST['y'];
-    $crop_h = $_POST['h'];
-    $crop_w = $_POST['w'];
-    $upload_path = 'crops/'; // Crops location - trailing slash
+    $upload_path = 'images/crops/'; // Crops location - trailing slash
     
     // Should we send back a thumbnail
     $thumbnail = true;
 
-    // Copy to new folder
-    copy($image_path, $upload_path . $image_name);
-    $image_path = $upload_path . $image_name;
+    // Start new class
+    $crop = new edit_image();
 
-    // Set permissions
-    chmod($image_path, 0777);
+    // Resize to new folder
+    $crop->load($image_path);
+    $crop->crop($crop_w, $crop_h, $crop_x, $crop_y);
+    $crop->save($upload_path.$image_name);
 
-    // Get image width and height
-    list($image_width, $image_height, $image_type, $image_attr) = getimagesize($image_path);
-    $image_type = getimagesize($image_path);
-    $image_type = $image_type['mime'];
-    $image_type = explode('/', $image_type);
-    $image_type = $image_type[1];
-
-    // Crop image
-    $canvas = imagecreatetruecolor($crop_w, $crop_h);
-
-    // Save Image
-    switch ($image_type) {
-        case 'jpg':
-        case 'jpeg':
-            $current_image = imagecreatefromjpeg($image_path);
-            imagecopy($canvas, $current_image, 0, 0, $crop_x, $crop_y, $image_width, $image_height);
-            imagejpeg($canvas, $image_path, 100);
-            break;
-        case 'gif':
-            $current_image = imagecreatefromgif($image_path);
-            imagecopy($canvas, $current_image, 0, 0, $crop_x, $crop_y, $image_width, $image_height);
-            imagegif($canvas, $image_path);
-            break;
-        case 'png':
-            $current_image = imagecreatefrompng($image_path);
-            imagecopy($canvas, $current_image, 0, 0, $crop_x, $crop_y, $image_width, $image_height);
-            imagepng($canvas, $image_path, 9);
-            break;
-    }
-
-    // Get file height and width
-    list($image_width, $image_height, $image_type, $image_attr) = getimagesize($image_path);
-    $image_type = getimagesize($image_path);
-    $image_type = $image_type['mime'];
-    $image_type = explode('/', $image_type);
-    $image_type = $image_type[1];
-
-    // Return file info
     $return_info = array(
         'status' => 'success',
         'file' => array(
             'name' => $image_name,
-            'path' => $image_path,
-            'size' => filesize($image_path),
-            'width' => $image_width,
-            'height' => $image_height,
-            'type' => $image_type
+            'path' => $upload_path.$image_name,
+            'size' => filesize($upload_path.$image_name),
+            'width' => $crop->getWidth(),
+            'height' => $crop->getHeight(),
+            'type' => $crop->getType()
         ),
         'info' => ''
     );
 
     if($thumbnail){
-        $return_info['thumbnail'] = thumbnail($image_name, $image_path, $image_width, $image_height, $image_ext);
+        $return_info['thumbnail'] = thumbnail($image_name, $upload_path.$image_name, $crop->getWidth(), $crop->getHeight());
     }
 
     echo json_encode($return_info);
 }
 
-function thumbnail($image_name, $image_path, $image_width, $image_height, $image_ext) {
+function thumbnail($image_name, $image_path, $image_width, $image_height) {
     // Thumbnail settings
-    $thumbnail_path = 'thumbnails/';
+    $thumbnail_path = 'images/thumbnails/';
     $thumbnail_height = 150;
     $thumbnail_width = 150;
 
@@ -190,16 +149,13 @@ function thumbnail($image_name, $image_path, $image_width, $image_height, $image
     }
     $thumb->save($thumbnail_path.$image_name);
 
-    // Set permissions
-    chmod($thumbnail_path.$image_name, 0777);
-
     return array(
         'name' => $image_name,
         'path' => $thumbnail_path.$image_name,
         'size' => filesize($thumbnail_path.$image_name),
         'width' => $thumb->getWidth(),
         'height' => $thumb->getHeight(),
-        'type' => $image_ext
+        'type' => $thumb->getType()
     );
 }
 
@@ -215,28 +171,32 @@ class edit_image {
 
     public $image;
     public $image_type;
+    public $image_type_text;
 
     function load($filename) {
         $image_info = getimagesize($filename);
         $this->image_type = $image_info[2];
         if ($this->image_type == IMAGETYPE_JPEG) {
+            $this->image_type_text = 'jpg';
             $this->image = imagecreatefromjpeg($filename);
         } elseif ($this->image_type == IMAGETYPE_GIF) {
+            $this->image_type_text = 'gif';
             $this->image = imagecreatefromgif($filename);
         } elseif ($this->image_type == IMAGETYPE_PNG) {
+            $this->image_type_text = 'png';
             $this->image = imagecreatefrompng($filename);
         }
     }
 
-    function save($filename, $image_type = IMAGETYPE_JPEG, $compression = 100, $permissions = null) {
-        if ($image_type == IMAGETYPE_JPEG) {
+    function save($filename, $compression = 100, $permissions = 0777) {
+        if ($this->image_type == IMAGETYPE_JPEG) {
             imagejpeg($this->image, $filename, $compression);
-        } elseif ($image_type == IMAGETYPE_GIF) {
+        } elseif ($this->image_type == IMAGETYPE_GIF) {
             imagegif($this->image, $filename);
-        } elseif ($image_type == IMAGETYPE_PNG) {
+        } elseif ($this->image_type == IMAGETYPE_PNG) {
             imagepng($this->image, $filename);
         }
-        if ($permissions != null) {
+        if ($permissions) {
             chmod($filename, $permissions);
         }
     }
@@ -259,6 +219,10 @@ class edit_image {
         return imagesy($this->image);
     }
 
+    function getType() {
+        return $this->image_type_text;
+    }
+
     function resizeToHeight($height) {
         $ratio = $height / $this->getHeight();
         $width = $this->getWidth() * $ratio;
@@ -277,24 +241,16 @@ class edit_image {
         $this->resize($width, $height);
     }
 
-    function resize($width,$height) {
+    function resize($width, $height) {
         $new_image = imagecreatetruecolor($width, $height);
-        if( $this->image_type == IMAGETYPE_GIF || $this->image_type == IMAGETYPE_PNG ) {
-            $current_transparent = imagecolortransparent($this->image);
-            if($current_transparent != -1) {
-                $transparent_color = imagecolorsforindex($this->image, $current_transparent);
-                $current_transparent = imagecolorallocate($new_image, $transparent_color['red'], $transparent_color['green'], $transparent_color['blue']);
-                imagefill($new_image, 0, 0, $current_transparent);
-                imagecolortransparent($new_image, $current_transparent);
-            } elseif( $this->image_type == IMAGETYPE_PNG) {
-                imagealphablending($new_image, false);
-                $color = imagecolorallocatealpha($new_image, 0, 0, 0, 127);
-                imagefill($new_image, 0, 0, $color);
-                imagesavealpha($new_image, true);
-            }
-        }
         imagecopyresampled($new_image, $this->image, 0, 0, 0, 0, $width, $height, $this->getWidth(), $this->getHeight());
-        $this->image = $new_image;  
+        $this->image = $new_image;
+    }
+
+    function crop($crop_w, $crop_h, $crop_x, $crop_y) {
+        $new_image = imagecreatetruecolor($crop_w, $crop_h);
+        imagecopy($new_image, $this->image, 0, 0, $crop_x, $crop_y, $this->getWidth(), $this->getHeight());
+        $this->image = $new_image;
     }
 
 }
