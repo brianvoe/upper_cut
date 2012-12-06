@@ -41,12 +41,6 @@
 	background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
 	background: -moz-linear-gradient(top, #faa51a, #f47a20);
 }
-.upcut_cont .upcut_btn_upload {
-	border: solid 1px #51a351;
-	background: #5bb75b;
-	background: -webkit-gradient(linear, left top, left bottom, from(#62c462), to(#51a351));
-	background: -moz-linear-gradient(top, #62c462, #51a351);
-}
 .upcut_cont .upcut_btn_clear {
 	border: solid 1px #bd362f;
 	background: #ee5f5b;
