@@ -41,8 +41,6 @@
         crop_force: false, /* When uploading disable multiple image selection (cause we would want to make the user crop after each upload) but allow multiple images to be uploaded */
 
         /* Buttons */
-        upload_button: true, /* Whether or not to show upload button for processing queue */
-        upload_button_text: 'Upload', /* Text for upload button */
         clear_button: true, /* Whether or not to show clear button */
         clear_button_text: 'Clear', /* Text for clear button */
 
@@ -165,16 +163,6 @@
             info.data.main_cont.find('.upcut_browse').click(function(){
                 info.browse();
             });
-
-            /* Add upload button - If true and auto_upload is false */
-            if(info.options.upload_button && !info.options.auto_upload) {
-                info.data.main_cont.find('.upcut_buttons').append('<div class="upcut_btn upcut_btn_upload">'+info.options.upload_button_text+'</div>');
-
-                /* Add click event for upload button */
-                info.data.main_cont.find('.upcut_btn_upload').click(function(){
-                    alert('Upload Button');
-                });
-            }
 
             /* Add clear button */
             if(info.options.clear_button) {
