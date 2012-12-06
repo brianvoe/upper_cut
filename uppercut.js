@@ -26,8 +26,8 @@
 
         /* Images */
         images_after_upload: true, /* Show images after upload and/or cropping */
-        images_width: 75, /* Images max width */
-        images_height: 75, /* Images max height */
+        images_width: 100, /* Images max width */
+        images_height: 100, /* Images max height */
         images_edit_val: 'Edit', /* Value of edit button - false if dont want to show edit button */
         images_delete_val: 'Delete', /* Value of delete button - false if dont want to show delete button */
 
