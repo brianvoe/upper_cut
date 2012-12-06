@@ -66,6 +66,7 @@
         errors: {}, /* Associative array list errors */
         items: {}, /* Array for storing items */
         cur_order: 0, /* Current order number */
+        browse_btn: false, /* Basically global variable for current browse button */
         image_array: {change: false, name: false, path: false, size: false, height: false, width: false, type: false}, /* Image array of useful information */
         image_coords: {x: false, y: false, w: false, h: false}, /* Crop coordinates */
         image_types: ['gif','png','jpg','jpeg','tiff','bmp'] /* Full allowed image types */
@@ -143,31 +144,29 @@
 
             /* Add upload click button */
             if(info.options.browse_button) {
+                /* Add browse div */
+                info.data.main_cont.find('.upcut_buttons').append('<div class="upcut_browse"></div>');
+
                 if(info.options.browse_image){
                     /* Load image for button */
                     var browse_image_value = (info.options.browse_image.indexOf('<img') !== -1 ? info.options.browse_image: '<img src="'+info.options.browse_image+'" />');
-                    info.data.main_cont.find('.upcut_buttons').append('<div class="upcut_browse upcut_image_browse">'+browse_image_value+'</div>');
-                    
-                    /* Set height and width of upcut_image_browse */
-                    info.data.main_cont.find('.upcut_buttons .upcut_image_browse img').load(function(){
-                        $(this).css({
-                            'max-height': (info.options.images_height)+'px',
-                            'max-width': (info.options.images_width)+'px'
-                        });
-                        $(this).parent().css({
-                            'max-height': (info.options.images_height)+'px',
-                            'max-width': (info.options.images_width)+'px'
-                        });
+                    info.data.browse_btn = '<div class="upcut_image_browse">'+browse_image_value+'</div>';
+                    info.data.main_cont.find('.upcut_buttons .upcut_browse').html(info.data.browse_btn);
+
+                    /* Add click event to browse button */
+                    info.data.main_cont.find('.upcut_browse .upcut_image_browse').click(function(){
+                        info.browse();
                     });
                 } else {
                     /* Load css style browse button */
-                    info.data.main_cont.find('.upcut_buttons').append('<div class="upcut_browse upcut_btn upcut_btn_browse">'+info.options.browse_button_text+'</div>');
+                    info.data.browse_btn = '<div class="upcut_btn upcut_btn_browse">'+info.options.browse_button_text+'</div>';
+                    info.data.main_cont.find('.upcut_buttons .upcut_browse').html(info.data.browse_btn);
+
+                    /* Add click event to browse button */
+                    info.data.main_cont.find('.upcut_browse .upcut_btn_browse').click(function(){
+                        info.browse();
+                    });
                 }
-                
-                /* Add click event to browse button */
-                info.data.main_cont.find('.upcut_browse').click(function(){
-                    info.browse();
-                });
             }
 
             /* Add clear button */
@@ -194,9 +193,6 @@
 
                     $(this).val(''); /* Clear out input field */
                 });
-            } else {
-                /* Old school single image upload */
-
             }
         },
         add: function(import_data) { /* Programmably allow user to import images via data */
@@ -457,19 +453,38 @@
             info.data.items[item_id].thumbnail.id = thumb_id;
             info.data.items[item_id].thumbnail.src = file_info.path;
 
-            if(info.options.browse_primary && !info.options.multiple) {
+            if(info.options.browse_primary) {
                 /* Use browse image as primary image */
-                info.data.main_cont.find('.upcut_buttons .upcut_image_browse img').attr('src', file_info.path+(info.options.ie_img_cache && $.browser.msie ? '?'+new Date().getTime():''));
+                info.data.main_cont.find('.upcut_buttons .upcut_browse').html('<div class="upcut_image_browse"><img style="max-width: '+info.options.images_width+'px; max-height: '+info.options.images_height+'px;" src="'+file_info.path+(info.options.ie_img_cache && $.browser.msie ? '?'+new Date().getTime():'')+'" /></div>');
 
-                /* Add event listener for edit */
-                info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_edit').click(function(){
-                    info._edit_image_thumbnail(item_id);
+                /* Add click event to browse button */
+                info.data.main_cont.find('.upcut_buttons .upcut_browse .upcut_image_browse').click(function(){
+                    info.browse();
                 });
+
+                /* Append thumb tool div */
+                info.data.main_cont.find('.upcut_buttons .upcut_browse').append('<div class="upcut_thumb_tools"></div>');
+
+                /* Add edit buttons */
+                if(info.options.images_edit_val) {
+                    /* Append edit button */
+                    info.data.main_cont.find('.upcut_buttons .upcut_browse .upcut_thumb_tools').append('<div class="upcut_thumb_edit">'+info.options.images_edit_val+'</div>');
+
+                    /* Add click button */
+                    info.data.main_cont.find('.upcut_buttons .upcut_browse .upcut_thumb_tools .upcut_thumb_edit').click(function(){
+                        info._edit_image_thumbnail(item_id);
+                    });
+                }
 
                 /* Add event listener for delete */
-                info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_delete').click(function(){
-                    info._remove_image_thumbnail(item_id);
-                });
+                if(info.options.images_delete_val) {
+                    /* Append delete button */
+                    info.data.main_cont.find('.upcut_buttons .upcut_browse .upcut_thumb_tools').append('<div class="upcut_thumb_delete">'+info.options.images_delete_val+'</div>');
+
+                    info.data.main_cont.find('.upcut_buttons .upcut_browse .upcut_thumb_tools .upcut_thumb_delete').click(function(){
+                        info._remove_image_thumbnail(item_id);
+                    });
+                }
             } else {
                 /* Put together thumb div */
                 var image_thumb = '';
@@ -518,7 +533,11 @@
             info.data.items[item_id].thumbnail.src = file_info.path;
 
             /* Update thumbnail src */
-            info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_img img').attr('src', file_info.path+(info.options.ie_img_cache && $.browser.msie ? '?'+new Date().getTime():''));
+            if(info.options.browse_primary) {
+                info.data.main_cont.find('.upcut_buttons .upcut_browse .upcut_image_browse img').attr('src', file_info.path+(info.options.ie_img_cache && $.browser.msie ? '?'+new Date().getTime():''));
+            } else {
+                info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_img img').attr('src', file_info.path+(info.options.ie_img_cache && $.browser.msie ? '?'+new Date().getTime():''));
+            }
         },
         _move_image_thumbnail: function(item_id) {
             var info = this;
@@ -548,8 +567,24 @@
 
             /* REMOVING THUMBNAIL MUST REMOVE ALL DATA AND INPUTS FOR THAT IMAGE */
 
-            /* Remove thumbnail */
-            info.data.main_cont.find('.upcut_images #'+info.data.items[item_id].thumbnail.id).remove();
+            if(info.options.browse_primary) {
+                /* Add browse button back */
+                info.data.main_cont.find('.upcut_buttons .upcut_browse').html(info.data.browse_btn);
+
+                /* Add click event to browse button */
+                if(info.options.browse_image){
+                    info.data.main_cont.find('.upcut_buttons .upcut_browse .upcut_image_browse').click(function(){
+                        info.browse();
+                    });
+                } else {
+                    info.data.main_cont.find('.upcut_buttons .upcut_browse .upcut_btn_browse').click(function(){
+                        info.browse();
+                    });
+                }
+            } else {
+                /* Remove thumbnail */
+                info.data.main_cont.find('.upcut_images #'+info.data.items[item_id].thumbnail.id).remove();
+            }
 
             /* Remove input */
             info.data.main_cont.find('.upcut_inputs #'+info.data.items[item_id].input_id).remove();

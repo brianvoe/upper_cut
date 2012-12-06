@@ -35,6 +35,10 @@
 	-moz-box-shadow: 0 1px 2px rgba(0,0,0,.2);
 	box-shadow: 0 1px 2px rgba(0,0,0,.2);
 }
+.upcut_cont .upcut_browse {
+	display: inline-block;
+	cursor: pointer;
+}
 .upcut_cont .upcut_btn_browse {
 	border: solid 1px #da7c0c;
 	background: #f78d1d;
@@ -56,7 +60,6 @@
 	background: -moz-linear-gradient(top, #807F83, #67666A);
 }
 .upcut_cont .upcut_image_browse {
-	cursor: pointer;
 	text-decoration: none;
 	border: none;
 }
@@ -78,17 +81,17 @@
 	padding: 3px;
 	margin: 0 0 3px 0;
 }
-.upcut_cont .upcut_images .upcut_thumb .upcut_thumb_tools {
+.upcut_cont .upcut_thumb_tools {
 
 }
-.upcut_cont .upcut_images .upcut_thumb .upcut_thumb_tools div {
+.upcut_cont .upcut_thumb_tools div {
 	display: inline-block;
 	cursor: pointer;
 }
-.upcut_cont .upcut_images .upcut_thumb .upcut_thumb_tools .upcut_thumb_edit {
+.upcut_cont .upcut_thumb_tools .upcut_thumb_edit {
 	color: orange;
 }
-.upcut_cont .upcut_images .upcut_thumb .upcut_thumb_tools .upcut_thumb_delete {
+.upcut_cont .upcut_thumb_tools .upcut_thumb_delete {
 	color: red;
 }
 
