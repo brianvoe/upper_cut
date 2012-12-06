@@ -40,14 +40,15 @@
         crop_square: false, /* Whether or not to keep square 1 by 1 aspect ratio */
         crop_force: false, /* When uploading disable multiple image selection (cause we would want to make the user crop after each upload) but allow multiple images to be uploaded */
 
-        /* Buttons */
-        clear_button: false, /* Whether or not to show clear button */
-        clear_button_text: 'Clear', /* Text for clear button */
-
-        /* Browse button */
-        browse_text: 'Browse', /* Text of default button */
+        /* Browse Button */
+        browse_button: true, /* Whether or not to show browse button */
+        browse_button_text: 'Browse', /* Text of default button */
         browse_image: false, /* Image location of browse button */
         browse_primary: false, /* Use browse button for primary image - Must be single use only */
+
+        /* Clear Button */
+        clear_button: false, /* Whether or not to show clear button */
+        clear_button_text: 'Clear', /* Text for clear button */
 
         /* Display Progress */
         name_char_limit: 20, /* Character limit of display name */
@@ -138,31 +139,33 @@
             }
 
             /* Add upload click button */
-            if(info.options.browse_image){
-                /* Load image for button */
-                var browse_image_value = (info.options.browse_image.indexOf('<img') !== -1 ? info.options.browse_image: '<img src="'+info.options.browse_image+'" />');
-                info.data.main_cont.find('.upcut_buttons').append('<div class="upcut_browse upcut_image_browse">'+browse_image_value+'</div>');
+            if(info.options.browse_button) {
+                if(info.options.browse_image){
+                    /* Load image for button */
+                    var browse_image_value = (info.options.browse_image.indexOf('<img') !== -1 ? info.options.browse_image: '<img src="'+info.options.browse_image+'" />');
+                    info.data.main_cont.find('.upcut_buttons').append('<div class="upcut_browse upcut_image_browse">'+browse_image_value+'</div>');
+                    
+                    /* Set height and width of upcut_image_browse */
+                    info.data.main_cont.find('.upcut_buttons .upcut_image_browse img').load(function(){
+                        $(this).css({
+                            'max-height': (info.options.images_height)+'px',
+                            'max-width': (info.options.images_width)+'px'
+                        });
+                        $(this).parent().css({
+                            'max-height': (info.options.images_height)+'px',
+                            'max-width': (info.options.images_width)+'px'
+                        });
+                    });
+                } else {
+                    /* Load css style browse button */
+                    info.data.main_cont.find('.upcut_buttons').append('<div class="upcut_browse upcut_btn upcut_btn_browse">'+info.options.browse_button_text+'</div>');
+                }
                 
-                /* Set height and width of upcut_image_browse */
-                info.data.main_cont.find('.upcut_buttons .upcut_image_browse img').load(function(){
-                    $(this).css({
-                        'max-height': (info.options.images_height)+'px',
-                        'max-width': (info.options.images_width)+'px'
-                    });
-                    $(this).parent().css({
-                        'max-height': (info.options.images_height)+'px',
-                        'max-width': (info.options.images_width)+'px'
-                    });
+                /* Add click event to browse button */
+                info.data.main_cont.find('.upcut_browse').click(function(){
+                    info.browse();
                 });
-            } else {
-                /* Load css style browse button */
-                info.data.main_cont.find('.upcut_buttons').append('<div class="upcut_browse upcut_btn upcut_btn_browse">'+info.options.browse_text+'</div>');
             }
-            
-            /* Add click event to browse button */
-            info.data.main_cont.find('.upcut_browse').click(function(){
-                info.browse();
-            });
 
             /* Add clear button */
             if(info.options.clear_button) {
