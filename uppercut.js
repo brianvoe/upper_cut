@@ -218,13 +218,16 @@
             }
 
             /* Ensure they pass all file info needed */
-            if(!import_data.name || !import_data.path || !import_data.size || !import_data.height || !import_data.width || !import_data.type) {
-                info._general_message('error', 'Must send all file info data: name, path, size, height, width and type');
+            if(!import_data.original) {
+                info._general_message('error', 'Must send at least original image information');
+                return;
+            }
+            if(!info._validate_return_data(import_data.original)) {
                 return;
             }
 
             /* Validate file */
-            var validate = info._validate_file(import_data);
+            var validate = info._validate_file(import_data.original);
             if(validate !== true) {
                 info._general_message('error', validate);
                 return;
@@ -232,12 +235,30 @@
 
             /* Add new data item */
             var item_id = info._add_data_item();
+            var thumbnail = import_data.original;
 
-            /* Add import data to to item data */
-            info.data.items[item_id].orig_image = import_data;
+            /* Add original data */
+            info.data.items[item_id].orig_image = import_data.original;
+
+            /* Add crop data */
+            if(import_data.crop && info._validate_return_data(import_data.crop)) {
+                info.data.items[item_id].crop_image = import_data.crop;
+                thumbnail = import_data.crop;
+
+                /* Check for coords */
+                if(!import_data.crop.coords) {
+                    info.data.items[item_id].crop_image.coords = info.data.image_coords;
+                }
+            }
+
+            /* Add thumbnail data */
+            if(import_data.thumbnail && info._validate_return_data(import_data.thumbnail)) {
+                info.data.items[item_id].thumb_image = import_data.thumbnail;
+                thumbnail = import_data.thumbnail;
+            }
 
             /* Add image thumbnail */
-            info._add_image_thumbnail(item_id, import_data);
+            info._add_image_thumbnail(item_id, thumbnail);
 
             /* Add input field */
             info._add_image_input(item_id);
@@ -402,10 +423,12 @@
                 if(info.data.items[item_id].crop_image.name) {
                     info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop']"+'" value="'+info.data.items[item_id].crop_image.path+'" />');
                     /* Crops x and y directions */
-                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop_x']"+'" value="'+info.data.items[item_id].crop_image.coords.x+'" />');
-                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop_y']"+'" value="'+info.data.items[item_id].crop_image.coords.y+'" />');
-                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop_w']"+'" value="'+info.data.items[item_id].crop_image.coords.w+'" />');
-                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop_h']"+'" value="'+info.data.items[item_id].crop_image.coords.h+'" />');
+                    if(info.data.items[item_id].crop_image.coords) {
+                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop_x']"+'" value="'+info.data.items[item_id].crop_image.coords.x+'" />');
+                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop_y']"+'" value="'+info.data.items[item_id].crop_image.coords.y+'" />');
+                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop_w']"+'" value="'+info.data.items[item_id].crop_image.coords.w+'" />');
+                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop_h']"+'" value="'+info.data.items[item_id].crop_image.coords.h+'" />');
+                    }
                 }
 
                 /* Add thumb input field */
@@ -1263,6 +1286,14 @@
             if(file.size > info.options.max_file_size) {
                 /* Add error to array */
                 info._add_error('file_size', 'Exceeded file size. Max file size is: '+info._size_in_text(info.options.max_file_size));
+                return false;
+            }
+            return true;
+        },
+        _validate_return_data: function(return_info) {
+            var info = this;
+            if(!return_info.name || !return_info.path || !return_info.size || !return_info.height || !return_info.width || !return_info.type) {
+                info._general_message('error', 'Must send all file info data: name, path, size, height, width and type');
                 return false;
             }
             return true;
