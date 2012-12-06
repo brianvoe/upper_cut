@@ -49,11 +49,26 @@
                         upload_url: 'uppercut.php?which=upload',
                         crop_url: 'uppercut.php?which=crop',
                         browse_primary: true,
-                        //browse_image: '<img src="http://cdn1.iconfinder.com/data/icons/Hand_Drawn_Web_Icon_Set/128/file_upload.png" />'
+                        browse_image: '<img src="http://cdn1.iconfinder.com/data/icons/Hand_Drawn_Web_Icon_Set/128/file_upload.png" />'
                     });
                 });
             </script>
             <div id="browse_upload"></div>
+        </div>
+        <br /><br /><br />
+        <!-- Clear Button Usage -->
+        <div>
+            <h2>Clear Button Usage</h2>
+            <script>
+                $(document).ready(function(){
+                    $('#clear_upload').uppercut({
+                        upload_url: 'uppercut.php?which=upload',
+                        crop_url: 'uppercut.php?which=crop',
+                        clear_button: true
+                    });
+                });
+            </script>
+            <div id="clear_upload"></div>
         </div>
         <br /><br /><br />
         <!-- Force Image Crop Usage -->
