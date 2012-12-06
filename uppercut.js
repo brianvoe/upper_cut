@@ -571,7 +571,7 @@
 
             /* Add queue container */
             var cont = '';
-            cont += '<div class="upcut_queue_item" id="'+queue_id+'">';
+            cont += '<div style="display: none;" class="upcut_queue_item" id="'+queue_id+'">';
             cont += '   <div class="upcut_queue_display"></div>'; /* Display */
             cont += '   <div class="upcut_queue_status"></div>'; /* Status */
             cont += '   <div style="clear: both;"></div>';
@@ -586,14 +586,22 @@
         _update_queue_status: function(item_id, queue_id, status, msg) {
             var info = this;
 
+            /* Make sure queue is showing */
+            info.data.main_cont.find('.upcut_queue #'+queue_id).show();
+
+            /* Add Message */
             info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_status').html('<div class="queue_'+status+'">'+msg+'</div>');
 
+            /* If status is error hide progress bar */
             if(status == 'error') {
                 info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_progress').hide();
             }
         },
         _add_file_to_queue: function(item_id, queue_id, file_info) { /* Take selected file info and add to queue display */
             var info = this;
+
+            /* Make sure queue is showing */
+            info.data.main_cont.find('.upcut_queue #'+queue_id).show();
 
             /* Add name to queue display */
             var text = '';
@@ -620,11 +628,13 @@
         _animate_progress: function(item_id, queue_id, speed, percent) {
             var info = this;
 
+            /* Make sure queue is showing */
+            info.data.main_cont.find('.upcut_queue #'+queue_id).show();
+
+            /* Animate progress bar */
             info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_progress .upcut_progress_bar').animate({
                 width: percent+'%'
-            }, speed, function() {
-                // Animation complete
-            });
+            }, speed);
         },
         /***********************/
         /*** Html5 functions ***/
@@ -711,6 +721,9 @@
 
                         /* Remove queue display */
                         info._remove_queue_item(item_id, queue_id);
+
+                        /* Remove data */
+                        info._remove_data_item(item_id);
                     } else {
                         /* Success */
                         info._update_queue_status(item_id, queue_id, 'success', 'Success!');
@@ -897,8 +910,15 @@
                 iframe_cont.remove(); /* Delete iframe */
                 
                 /* Process return info */
-                if(return_info.status == 'error') { /* Error */
+                if(return_info.status == 'error') {
+                    /* Error */
                     info._update_queue_status(item_id, queue_id, 'error', return_info.info);
+
+                    /* Remove queue */
+                    info._remove_queue_item(item_id, queue_id);
+
+                    /* Remove data */
+                    info._remove_data_item(item_id);
                 } else { 
                     /* Success */
                     info._update_queue_status(item_id, queue_id, 'success', 'Success!');
