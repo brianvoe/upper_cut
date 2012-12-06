@@ -19,13 +19,11 @@
 
         /* Preferences */
         html5: true, /* Whether or not to use html5 version of uploading - If browser is not capable it will be set to false */
-        auto_upload: true, /* Auto upload upon file select */
         multiple: true, /* Whether or not its multiple select - If not html5 compatible it will be set to false */
         max_upload: 5, /* Max amount of upload allowed */
         debug: false, /* Console.log errors as they are added */
 
         /* Images */
-        images_after_upload: true, /* Show images after upload and/or cropping */
         images_width: 100, /* Images max width */
         images_height: 100, /* Images max height */
         images_edit_val: 'Edit', /* Value of edit button - false if dont want to show edit button */
@@ -58,7 +56,7 @@
         file_types: ['gif','png','jpg','jpeg'], /* Allowed file upload types */
 
         /* Misc */
-        ie_img_cache: true /* Add timestampe to end of img src to bypass ie image cache issue */
+        ie_img_cache: true /* Add timestamp to end of img src to bypass ie image cache issue */
     };
 
     /* Datas */
@@ -663,12 +661,8 @@
                 /* Validate each file */
                 var validate = info._validate_file(file);
                 if(validate === true) {
-                    if(info.options.auto_upload) { /* Upload file */
-                        /* Start uploading file */
-                        info._start_html5_upload(item_id, file, queue_id);
-                    } else { /* Queue for later submission */
-
-                    }
+                    /* Start uploading file */
+                    info._start_html5_upload(item_id, file, queue_id);
                 } else {
                     /* Fail show file errors */
                     info._update_queue_status(item_id, queue_id, 'error', validate);
@@ -861,11 +855,8 @@
                         /* Validate each file */
                         var validate = info._validate_file(file_info);
                         if(validate === true) {
-                            if(info.options.auto_upload) { /* Upload file */
-                                info._start_iframe_upload(item_id, file_info, frame_id, iframe_cont, queue_id);
-                            } else { /* Queue for later submission */
-
-                            }
+                            /* Upload file */
+                            info._start_iframe_upload(item_id, file_info, frame_id, iframe_cont, queue_id);
                         } else {
                             /* Fail show file errors */
                             info._update_queue_status(item_id, queue_id, 'error', validate);
