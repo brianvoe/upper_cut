@@ -1,6 +1,6 @@
-/uploads/*
-!/uploads/index.html
-/crops/*
-!/crops/index.html
-/thumbnails/*
-!/thumbnails/index.html
+/images/uploads/*
+!/images/uploads/index.html
+/images/crops/*
+!/images/crops/index.html
+/images/thumbnails/*
+!/images/thumbnails/index.html
