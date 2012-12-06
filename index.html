@@ -4,93 +4,152 @@
         <meta charset=utf-8>
         <title>Upload and crop jquery plugin</title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.1/jquery-ui.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.9.1/jquery-ui.min.js"></script>
         <script src="uppercut.js"></script>
         <link href="uppercut.css" rel="stylesheet" type="text/css" />
-        <script>
-            $(document).ready(function(){
-                $('#image_upload').uppercut({
-                    debug: true,
-                    max_upload: 50,
-                    upload_url: 'uppercut.php?which=upload',
-                    crop_url: 'uppercut.php?which=crop',
-                    clear_button: false,
-                    crop_force: false,
-                    multiple: true,
-                    browse_primary: true,
-                    //max_file_size: 2 * (1024 * 1024), /* 2mb */
-                    images_edit_val: '<img style="padding-left: 18px;" src="http://cdn1.iconfinder.com/data/icons/diagona/icon/16/018.png" />',
-                    images_delete_val: '<img style="padding-left: 10px;" src="http://cdn1.iconfinder.com/data/icons/diagona/icon/16/101.png" />',
-                    browse_image: '<img src="http://cdn1.iconfinder.com/data/icons/Hand_Drawn_Web_Icon_Set/128/file_upload.png" />',
-                    images_height: 150,
-                    images_width: 150
-                });
-
-                $('.create_click').click(function(){
-                    $('#image_upload').uppercut({
-                        upload_url: 'uppercut_upload.php'
-                    });
-                });
-                $('.destroy_click').click(function(){
-                    $('#image_upload').uppercut('destroy');
-                });
-                $('.import_click').click(function(){
-                    $('#image_upload').uppercut('add', {
-                        'original': {
-                            name: 'logo3w.png',
-                            path: 'https://www.google.com/images/srpr/logo3w.png',
-                            size: 6000, /* Actual file size */
-                            height: 95, /* Actual file height - for proper cropping */
-                            width: 275, /* Actual file width - for proper cropping */
-                            type: 'png'
-                        },
-                        'crop': {
-                            name: 'logo3w.png',
-                            path: 'https://www.google.com/images/srpr/logo3w.png',
-                            size: 6000, /* Actual file size */
-                            height: 95, /* Actual file height - for proper cropping */
-                            width: 275, /* Actual file width - for proper cropping */
-                            type: 'png',
-                            coords: {x: 100, y: 100, w: 200, h: 200}
-                        },
-                        'thumbnail': {
-                            name: 'logo3w.png',
-                            path: 'https://www.google.com/images/srpr/logo3w.png',
-                            size: 6000, /* Actual file size */
-                            height: 95, /* Actual file height - for proper cropping */
-                            width: 275, /* Actual file width - for proper cropping */
-                            type: 'png'
-                        }
-                    });
-                });
-                $('.data_click').click(function(){
-                    $('#image_upload').uppercut('data');
-                });
-                $('.browse_click').click(function(){
-                    $('#image_upload').uppercut('browse');
-                });
-                $('.clear_click').click(function(){
-                    $('#image_upload').uppercut('clear');
-                });
-                $('.errors_click').click(function(){
-                    $('#image_upload').uppercut('errors');
-                });
-            });
-        </script>
     </head>
     <body>
         <h1>Upper Cut</h1>
-        <h2>Advanced image upload and crop jquery plugin</h2>
-        <a class="create_click" href="javascript:;">Create</a> - 
-        <a class="destroy_click" href="javascript:;">Destroy</a>
-        <br />
-        <a class="import_click" href="javascript:;">Import</a> - 
-        <a class="data_click" href="javascript:;">Data</a>
-        <br />
-        <a class="browse_click" href="javascript:;">Browse</a> - 
-        <a class="clear_click" href="javascript:;">Clear</a> -
-        <a class="errors_click" href="javascript:;">Errors</a>
-        <br /><br />
-        <div id="image_upload"></div>
+        <h3>Advanced image upload and crop jquery plugin</h3>
+        <!-- Simple Usage -->
+        <div>
+            <h2>Simple Usage</h2>
+            <script>
+                $(document).ready(function(){
+                    $('#simple_upload').uppercut({
+                        upload_url: 'uppercut.php?which=upload',
+                        crop_url: 'uppercut.php?which=crop'
+                    });
+                });
+            </script>
+            <div id="simple_upload"></div>
+        </div>
+        <br /><br /><br />
+        <!-- Single Image Usage -->
+        <div>
+            <h2>Single Image Usage</h2>
+            <script>
+                $(document).ready(function(){
+                    $('#single_upload').uppercut({
+                        upload_url: 'uppercut.php?which=upload',
+                        crop_url: 'uppercut.php?which=crop',
+                        multiple: false
+                    });
+                });
+            </script>
+            <div id="single_upload"></div>
+        </div>
+        <br /><br /><br />
+        <!-- Image as Browse Usage -->
+        <div>
+            <h2>Image as Browse Usage</h2>
+            <script>
+                $(document).ready(function(){
+                    $('#browse_upload').uppercut({
+                        upload_url: 'uppercut.php?which=upload',
+                        crop_url: 'uppercut.php?which=crop',
+                        browse_primary: true,
+                        //browse_image: '<img src="http://cdn1.iconfinder.com/data/icons/Hand_Drawn_Web_Icon_Set/128/file_upload.png" />'
+                    });
+                });
+            </script>
+            <div id="browse_upload"></div>
+        </div>
+        <br /><br /><br />
+        <!-- Force Image Crop Usage -->
+        <div>
+            <h2>Force Image Crop Usage</h2>
+            <script>
+                $(document).ready(function(){
+                    $('#force_upload').uppercut({
+                        upload_url: 'uppercut.php?which=upload',
+                        crop_url: 'uppercut.php?which=crop',
+                        crop_force: true /* Force user to crop image after upload - Forces single image selection */
+                    });
+                });
+            </script>
+            <div id="force_upload"></div>
+        </div>
+        <br /><br /><br />
+        <!-- Import Image Usage -->
+        <div>
+            <h2>Import Image Usage</h2>
+            <script>
+                $(document).ready(function(){
+                    $('#import_upload').uppercut({
+                        upload_url: 'uppercut.php?which=upload',
+                        crop_url: 'uppercut.php?which=crop',
+                        browse_button: false
+                    });
+                    $('.import_click').click(function(){
+                        $('#import_upload').uppercut('add', {
+                            'original': {
+                                name: 'logo3w.png',
+                                path: 'https://www.google.com/images/srpr/logo3w.png',
+                                size: 6000, /* Actual file size */
+                                height: 95, /* Actual file height - for proper cropping */
+                                width: 275, /* Actual file width - for proper cropping */
+                                type: 'png'
+                            },
+                            'crop': {
+                                name: 'logo3w.png',
+                                path: 'https://www.google.com/images/srpr/logo3w.png',
+                                size: 6000, /* Actual file size */
+                                height: 95, /* Actual file height - for proper cropping */
+                                width: 275, /* Actual file width - for proper cropping */
+                                type: 'png',
+                                coords: {x: 100, y: 100, w: 200, h: 200}
+                            },
+                            'thumbnail': {
+                                name: 'logo3w.png',
+                                path: 'https://www.google.com/images/srpr/logo3w.png',
+                                size: 6000, /* Actual file size */
+                                height: 95, /* Actual file height - for proper cropping */
+                                width: 275, /* Actual file width - for proper cropping */
+                                type: 'png'
+                            }
+                        });
+                    });
+                });
+            </script>
+            <a class="import_click" href="javascript:;">Import</a>
+            <br /><br />
+            <div id="import_upload"></div>
+        </div>
+        <br /><br /><br />
+        <!-- External Buttons Usage -->
+        <div>
+            <h2>External Buttons Usage</h2>
+            <script>
+                $(document).ready(function(){
+                    $('.create_click').click(function(){
+                        $('#click_upload').uppercut({
+                            upload_url: 'uppercut.php?which=upload',
+                            crop_url: 'uppercut.php?which=crop',
+                        });
+                    });
+                    $('.destroy_click').click(function(){
+                        $('#click_upload').uppercut('destroy');
+                    });
+                    $('.data_click').click(function(){
+                        $('#click_upload').uppercut('data');
+                    });
+                    $('.browse_click').click(function(){
+                        $('#click_upload').uppercut('browse');
+                    });
+                    $('.clear_click').click(function(){
+                        $('#click_upload').uppercut('clear');
+                    });
+                    $('.errors_click').click(function(){
+                        $('#click_upload').uppercut('errors');
+                    });
+                });
+            </script>
+            <a class="create_click" href="javascript:;">Create</a> - <a class="destroy_click" href="javascript:;">Destroy</a> - 
+            <a class="browse_click" href="javascript:;">Browse</a> - <a class="clear_click" href="javascript:;">Clear</a>
+            <br /><br />
+            <div id="click_upload"></div>
+        </div>
+        <br /><br /><br />
     </body>
 </html>
