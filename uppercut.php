@@ -12,6 +12,10 @@ function upload() {
     $allowed_types = array('jpg', 'jpeg', 'pjpeg', 'gif', 'bmp', 'png', 'x-png'); // Allowed file types
     $max_size = 10 * (1024 * 1024); // Maximum filesize in bytes (currently 10MB).
     $upload_path = 'uploads/'; // Upload location - trailing slash
+
+    // Should we send back a thumbnail
+    $thumbnail = true;
+
     // Return info
     $return_info = array(
         'status' => '',
@@ -74,11 +78,15 @@ function upload() {
                 'name' => $file_name,
                 'path' => $file_path,
                 'size' => $file_size,
-                'height' => $file_height,
                 'width' => $file_width,
+                'height' => $file_height,
                 'type' => $file_type
             );
             $return_info['info'] = '';
+
+            if($thumbnail){
+                $return_info['thumbnail'] = thumbnail($file_name, $file_path, $file_width, $file_height, $file_type);
+            }
         }
     }
 
@@ -96,6 +104,7 @@ function crop() {
     $crop_w = $_POST['w'];
     $upload_path = 'crops/'; // Crops location - trailing slash
     
+    // Should we send back a thumbnail
     $thumbnail = true;
 
     // Copy to new folder
@@ -109,14 +118,14 @@ function crop() {
     list($image_width, $image_height, $image_type, $image_attr) = getimagesize($image_path);
     $image_type = getimagesize($image_path);
     $image_type = $image_type['mime'];
-    $image_ext = explode('/', $image_type);
-    $image_ext = $image_ext[1];
+    $image_type = explode('/', $image_type);
+    $image_type = $image_type[1];
 
     // Crop image
     $canvas = imagecreatetruecolor($crop_w, $crop_h);
 
     // Save Image
-    switch ($image_ext) {
+    switch ($image_type) {
         case 'jpg':
         case 'jpeg':
             $current_image = imagecreatefromjpeg($image_path);
@@ -139,8 +148,8 @@ function crop() {
     list($image_width, $image_height, $image_type, $image_attr) = getimagesize($image_path);
     $image_type = getimagesize($image_path);
     $image_type = $image_type['mime'];
-    $image_ext = explode('/', $image_type);
-    $image_ext = $image_ext[1];
+    $image_type = explode('/', $image_type);
+    $image_type = $image_type[1];
 
     // Return file info
     $return_info = array(
@@ -151,7 +160,7 @@ function crop() {
             'size' => filesize($image_path),
             'width' => $image_width,
             'height' => $image_height,
-            'type' => $image_ext
+            'type' => $image_type
         ),
         'info' => ''
     );

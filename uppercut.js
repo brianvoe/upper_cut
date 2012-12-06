@@ -692,6 +692,9 @@
                         /* Success */
                         info._update_queue_status(item_id, queue_id, 'success', 'Success!');
 
+                        /* Set variable */
+                        var thumbnail = return_info.file;
+
                         /* Remove queue display */
                         info._remove_queue_item(item_id, queue_id);
 
@@ -702,6 +705,20 @@
                         info.data.items[item_id].orig_image.height = return_info.file.height;
                         info.data.items[item_id].orig_image.width = return_info.file.width;
                         info.data.items[item_id].orig_image.type = return_info.file.type;
+
+                        /* Check for thumbnail */
+                        if(return_info.thumbnail) {
+                            /* Add file info to data item thumbnail */
+                            info.data.items[item_id].thumb_image.name = return_info.thumbnail.name;
+                            info.data.items[item_id].thumb_image.path = return_info.thumbnail.path;
+                            info.data.items[item_id].thumb_image.size = return_info.thumbnail.size;
+                            info.data.items[item_id].thumb_image.height = return_info.thumbnail.height;
+                            info.data.items[item_id].thumb_image.width = return_info.thumbnail.width;
+                            info.data.items[item_id].thumb_image.type = return_info.thumbnail.type;
+
+                            /* thumbnail will use thumbnail appose to orig image */
+                            thumbnail = return_info.thumbnail;
+                        }
 
                         /* If crop add image and initiate jcrop */
                         if(info.options.crop && (info.options.crop_force || !info.options.multiple)) {
@@ -714,7 +731,7 @@
                             info._add_image_input(item_id);
 
                             /* Add thumbnail */
-                            info._add_image_thumbnail(item_id, return_info.file);
+                            info._add_image_thumbnail(item_id, thumbnail);
                         }
                     }
                 },
@@ -859,8 +876,12 @@
                 /* Process return info */
                 if(return_info.status == 'error') { /* Error */
                     info._update_queue_status(item_id, queue_id, 'error', return_info.info);
-                } else { /* Success */
+                } else { 
+                    /* Success */
                     info._update_queue_status(item_id, queue_id, 'success', 'Success!');
+
+                    /* Set variable */
+                    var thumbnail = return_info.file;
 
                     /* Remove queue display */
                     info._remove_queue_item(item_id, queue_id);
@@ -873,6 +894,20 @@
                     info.data.items[item_id].orig_image.width = return_info.file.width;
                     info.data.items[item_id].orig_image.type = return_info.file.type;
 
+                    /* Check for thumbnail */
+                    if(return_info.thumbnail) {
+                        /* Add file info to data item thumbnail */
+                        info.data.items[item_id].thumb_image.name = return_info.thumbnail.name;
+                        info.data.items[item_id].thumb_image.path = return_info.thumbnail.path;
+                        info.data.items[item_id].thumb_image.size = return_info.thumbnail.size;
+                        info.data.items[item_id].thumb_image.height = return_info.thumbnail.height;
+                        info.data.items[item_id].thumb_image.width = return_info.thumbnail.width;
+                        info.data.items[item_id].thumb_image.type = return_info.thumbnail.type;
+
+                        /* thumbnail will use thumbnail appose to orig image */
+                        thumbnail = return_info.thumbnail;
+                    }
+
                     /* If crop add image and initiate jcrop */
                     if(info.options.crop && (info.options.crop_force || !info.options.multiple)) {
                         info._crop_start(item_id, return_info.file, false);
@@ -884,7 +919,7 @@
                         info._add_image_input(item_id);
 
                         /* Add thumbnail */
-                        info._add_image_thumbnail(item_id, return_info.file);
+                        info._add_image_thumbnail(item_id, thumbnail);
                     }
                 }
             });
@@ -1068,35 +1103,51 @@
                     url: info.options.crop_url,
                     data: 'image_path='+image_info.path+'&image_name='+image_info.name+'&x='+coords.x+'&y='+coords.y+'&w='+coords.w+'&h='+coords.h,
                     success: function(results) {
-                        results = $.parseJSON(results);
-                        if(results.status == 'success') {
+                        var return_info = $.parseJSON(results);
+                        if(return_info.status == 'success') {
                             /* Change data input_path */
-                            info._update_data_item_input_path(item_id, results.file.path);
+                            info._update_data_item_input_path(item_id, return_info.file.path);
 
-                            /* Add file info to data item */
-                            info.data.items[item_id].crop_image.name = results.file.name;
-                            info.data.items[item_id].crop_image.path = results.file.path;
-                            info.data.items[item_id].crop_image.size = results.file.size;
-                            info.data.items[item_id].crop_image.height = results.file.height;
-                            info.data.items[item_id].crop_image.width = results.file.width;
-                            info.data.items[item_id].crop_image.type = results.file.type;
+                            var thumbnail = return_info.file;
+
+                            /* Add file info to data item crop */
+                            info.data.items[item_id].crop_image.name = return_info.file.name;
+                            info.data.items[item_id].crop_image.path = return_info.file.path;
+                            info.data.items[item_id].crop_image.size = return_info.file.size;
+                            info.data.items[item_id].crop_image.height = return_info.file.height;
+                            info.data.items[item_id].crop_image.width = return_info.file.width;
+                            info.data.items[item_id].crop_image.type = return_info.file.type;
                             info.data.items[item_id].crop_image.coords = coords;
 
                             /* Add input field */
                             info._add_image_input(item_id);
 
+                            /* Check for thumbnail */
+                            if(return_info.thumbnail) {
+                                /* Add file info to data item thumbnail */
+                                info.data.items[item_id].thumb_image.name = return_info.thumbnail.name;
+                                info.data.items[item_id].thumb_image.path = return_info.thumbnail.path;
+                                info.data.items[item_id].thumb_image.size = return_info.thumbnail.size;
+                                info.data.items[item_id].thumb_image.height = return_info.thumbnail.height;
+                                info.data.items[item_id].thumb_image.width = return_info.thumbnail.width;
+                                info.data.items[item_id].thumb_image.type = return_info.thumbnail.type;
+
+                                /* thumbnail will use thumbnail appose to crop image */
+                                thumbnail = return_info.thumbnail;
+                            }
+
                             if(update) {
                                 /* Update thumbnail */
-                                info._update_image_thumbnail(item_id, info.data.items[item_id].thumbnail.id, results.file);
+                                info._update_image_thumbnail(item_id, info.data.items[item_id].thumbnail.id, thumbnail);
                             } else {
                                 /* Add thumbnail */
-                                info._add_image_thumbnail(item_id, results.file);
+                                info._add_image_thumbnail(item_id, thumbnail);
                             }
 
                             /* Close and remove crop */
                             info._crop_remove();
                         } else {
-                            info._add_error('crop_submit', results.info);
+                            info._add_error('crop_submit', return_info.info);
                         }
                     }
                 });
