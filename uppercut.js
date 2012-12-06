@@ -104,6 +104,11 @@
                 info._add_error('using_ie', 'For some reason your using internet explorer');
             }
 
+            /* If browse button is the primary image force single image */
+            if(info.options.browse_primary) {
+                info.options.multiple = false;
+            }
+
             /* Get or set id */
             if ($(input).attr('id')) {
                 info.data.main_id = $(input).attr('id');
