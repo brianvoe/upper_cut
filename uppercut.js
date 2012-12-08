@@ -67,7 +67,7 @@
         items: {}, /* Array for storing items */
         cur_order: 0, /* Current order number */
         browse_btn: false, /* Basically global variable for current browse button */
-        image_array: {change: false, name: false, path: false, size: false, height: false, width: false, type: false}, /* Image array of useful information */
+        image_array: {name: false, path: false, size: false, height: false, width: false, type: false}, /* Image array of useful information */
         image_coords: {x: false, y: false, w: false, h: false}, /* Crop coordinates */
         image_types: ['gif','png','jpg','jpeg','tiff','bmp'] /* Full allowed image types */
     };
@@ -227,6 +227,17 @@
             var item_id = info._add_data_item();
             var thumbnail = import_data.original;
 
+            /* Add status data */
+            info.data.items[item_id].status = 'import';
+
+            /* Add data to data */
+            if(import_data.data) {
+                info.data.items[item_id].import_data = {};
+                $.each(import_data.data, function(import_key, import_value) {
+                    info.data.items[item_id].import_data[import_key] = import_value;
+                });
+            }
+
             /* Add original data */
             info.data.items[item_id].orig_image = import_data.original;
 
@@ -323,11 +334,13 @@
             /* Set variables */
             info.data.items[item_id] = {
                 order: info.data.cur_order,
+                status: false,
                 frame_id: false,
                 queue_id: false,
                 thumbnail: {id: false, src: false},
                 input_id: false,
                 input_path: false,
+                import_data: false,
                 orig_image: jQuery.extend({}, info.data.image_array),
                 crop_image: jQuery.extend({}, info.data.image_array),
                 thumb_image: jQuery.extend({}, info.data.image_array)
@@ -403,6 +416,16 @@
                 info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+'" value="'+info.data.items[item_id].input_path+'" />');
             } else {
                 /* Advanced input */
+
+                /* Add Status */
+                info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['status']"+'" value="'+info.data.items[item_id].status+'" />');
+
+                /* Add Import data */
+                if(info.data.items[item_id].import_data) {
+                    $.each(info.data.items[item_id].import_data, function(import_key, import_value) {
+                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['data']['"+import_key+"']"+'" value="'+import_value+'" />');
+                    });
+                }
                 
                 /* Add original input field */
                 if(info.data.items[item_id].orig_image.name) {
@@ -416,10 +439,10 @@
                     info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop']['path']"+'" value="'+info.data.items[item_id].crop_image.path+'" />');
                     /* Crops x and y directions */
                     if(info.data.items[item_id].crop_image.coords) {
-                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop']['x']"+'" value="'+info.data.items[item_id].crop_image.coords.x+'" />');
-                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop']['y']"+'" value="'+info.data.items[item_id].crop_image.coords.y+'" />');
-                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop']['w']"+'" value="'+info.data.items[item_id].crop_image.coords.w+'" />');
-                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop']['h']"+'" value="'+info.data.items[item_id].crop_image.coords.h+'" />');
+                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop']['coords']['x']"+'" value="'+info.data.items[item_id].crop_image.coords.x+'" />');
+                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop']['coords']['y']"+'" value="'+info.data.items[item_id].crop_image.coords.y+'" />');
+                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop']['coords']['w']"+'" value="'+info.data.items[item_id].crop_image.coords.w+'" />');
+                        info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"['crop']['coords']['h']"+'" value="'+info.data.items[item_id].crop_image.coords.h+'" />');
                     }
                 }
 
@@ -698,6 +721,9 @@
                 var item_id = info._add_data_item();
                 info.data.items[item_id].queue_id = queue_id;
 
+                /* Add status data */
+                info.data.items[item_id].status = 'new';
+
                 /* Add info to queue display */
                 info._add_file_to_queue(item_id, queue_id, file);
                 
@@ -739,6 +765,23 @@
                 contentType: false,
                 processData: false,
                 success: function(return_info) {
+                    /* Validate json string */
+                    if(!info._validate_json_str(return_info)) {
+                        /* Add error */
+                        info._add_error('upload_submit', 'Return info was not a proper json string');
+
+                        /* Error */
+                        info._update_queue_status(item_id, queue_id, 'error', 'There was a problem submitting your image');
+
+                        /* Remove queue */
+                        info._remove_queue_item(item_id, queue_id);
+
+                        /* Remove data */
+                        info._remove_data_item(item_id);
+
+                        return;
+                    }
+                
                     return_info = $.parseJSON(return_info);
                     if(return_info.status == 'error') {
                         /* Script returned error */
@@ -888,6 +931,9 @@
                         /* Add new data item_id */
                         var item_id = info._add_data_item();
 
+                        /* Add status data */
+                        info.data.items[item_id].status = 'new';
+
                         /* Add frame_id and queue_id to data item_id */
                         info.data.items[item_id].frame_id = frame_id;
                         info.data.items[item_id].queue_id = queue_id;
@@ -930,6 +976,24 @@
 
             iframe_cont.load(function() {
                 iframe_cont.contents().find('body form').remove(); /* Remove form */
+
+                /* Validate json string */
+                if(!info._validate_json_str(iframe_cont.contents().find('body').html())) {
+                    /* Add error */
+                    info._add_error('upload_submit', 'Return info was not a proper json string');
+
+                    /* Error */
+                    info._update_queue_status(item_id, queue_id, 'error', 'There was a problem submitting your image');
+
+                    /* Remove queue */
+                    info._remove_queue_item(item_id, queue_id);
+
+                    /* Remove data */
+                    info._remove_data_item(item_id);
+
+                    return;
+                }
+
                 return_info = $.parseJSON(iframe_cont.contents().find('body').html());
                 iframe_cont.unbind('load');
                 iframe_cont.remove(); /* Delete iframe */
@@ -1171,6 +1235,20 @@
                     url: info.options.crop_url,
                     data: 'image_path='+image_info.path+'&image_name='+image_info.name+'&x='+coords.x+'&y='+coords.y+'&w='+coords.w+'&h='+coords.h,
                     success: function(results) {
+                        /* Validate json string */
+                        if(!info._validate_json_str(results)) {
+                            /* Add error */
+                            info._add_error('crop_submit', 'Return info was not a proper json string');
+
+                            /* Close and remove crop */
+                            info._crop_remove();
+
+                            /* Show error message */
+                            info._general_message('error', 'There was a problem cropping image');
+                            return;
+                        }
+
+                        /* Grab results data */
                         var return_info = $.parseJSON(results);
                         if(return_info.status == 'success') {
                             /* Change data input_path */
@@ -1339,6 +1417,14 @@
             var info = this;
             if(!return_info.name || !return_info.path || !return_info.size || !return_info.height || !return_info.width || !return_info.type) {
                 info._general_message('error', 'Must send all file info data: name, path, size, height, width and type');
+                return false;
+            }
+            return true;
+        },
+        _validate_json_str: function(str) {
+            try {
+                JSON.parse(str);
+            } catch (e) {
                 return false;
             }
             return true;

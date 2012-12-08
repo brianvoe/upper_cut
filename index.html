@@ -98,6 +98,11 @@
                     });
                     $('.import_click').click(function(){
                         $('#import_upload').uppercut('add', {
+                            'data': {
+                                'id': 735,
+                                'user_id': 348,
+                                'msg': 'Here is a message text'
+                            },
                             'original': {
                                 name: 'logo3w.png',
                                 path: 'https://www.google.com/images/srpr/logo3w.png',
@@ -113,7 +118,7 @@
                                 height: 95, /* Actual file height - for proper cropping */
                                 width: 275, /* Actual file width - for proper cropping */
                                 type: 'png',
-                                coords: {x: 100, y: 100, w: 200, h: 200}
+                                coords: {x: 10, y: 10, w: 200, h: 200}
                             },
                             'thumbnail': {
                                 name: 'logo3w.png',
