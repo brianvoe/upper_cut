@@ -150,8 +150,7 @@
 
                 if(info.options.browse_image){
                     /* Load image for button */
-                    var browse_image_value = (info.options.browse_image.indexOf('<img') !== -1 ? info.options.browse_image: '<img src="'+info.options.browse_image+'" />');
-                    info.data.browse_btn = '<div class="upcut_image_browse">'+browse_image_value+'</div>';
+                    info.data.browse_btn = '<div class="upcut_image_browse">'+info.options.browse_image+'</div>';
                     info.data.main_cont.find('.upcut_buttons .upcut_browse').html(info.data.browse_btn);
 
                     /* Add click event to browse button */
