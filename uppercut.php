@@ -31,7 +31,7 @@ function upload() {
     );
 
     // File Info
-    $name = 'uc_image';
+    $name = $_POST['post_name'];
     $file_name = $_FILES[$name]['name'];
     $file_temp = $_FILES[$name]['tmp_name'];
     $file_size = $_FILES[$name]['size'];
@@ -92,8 +92,9 @@ function upload() {
 
 function crop() {
     // Grab crop post variables
-    $image_name = $_POST['uc_image'];
-    $image_path = $_POST['uc_image_path'];
+    $post_name = $_POST['post_name'];
+    $image_name = $_POST[$post_name];
+    $image_path = $_POST[$post_name.'_path'];
     $crop_w = $_POST['w'];
     $crop_h = $_POST['h'];
     $crop_x = $_POST['x'];

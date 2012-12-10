@@ -16,6 +16,7 @@
 
         /* Naming */
         upload_name: 'uc_image', /* Name of input field, will use this for post grabbing - Multiple images will automatically add [] to the end of the name */
+        post_name: true, /* Post name with all other posts so the server will know what name to look for */
 
         /* Preferences */
         html5: true, /* Whether or not to use html5 version of uploading - If browser is not capable it will be set to false */
@@ -756,6 +757,11 @@
             var form_data = new FormData();
             form_data.append(info.options.upload_name, file);
 
+            /* Send post name */
+            if(info.options.post_name) {
+                form_data.append('post_name', info.options.upload_name);
+            }
+
             /* Make ajax request */
             $.ajax({
                 url: info.options.upload_url,
@@ -903,6 +909,10 @@
                 iframe_cont.load(function(){
                     var form_txt = '';
                     form_txt += '<form action="'+info.options.upload_url+'" method="post" enctype="multipart/form-data">';
+                    /* Send post name */
+                    if(info.options.post_name) {
+                        form_txt += '<input style="display: none;" type="text" name="post_name" value="'+info.options.upload_name+'" />';
+                    }
                     form_txt += '   <input style="display: none;" type="file" name="'+info.options.upload_name+'" />';
                     form_txt += '</form>';
 
@@ -1228,12 +1238,18 @@
         },
         _crop_submit: function(item_id, image_info, coords, update) {
             var info = this;
+            var post_name = '';
+
+            /* Send post name */
+            if(info.options.post_name) {
+                post_name = 'post_name='+info.options.upload_name+'&';
+            }
 
             if(info.options.crop_url) {
                 $.ajax({
                     type: 'POST',
                     url: info.options.crop_url,
-                    data: info.options.upload_name+'='+image_info.name+'&'+info.options.upload_name+'_path='+image_info.path+'&x='+coords.x+'&y='+coords.y+'&w='+coords.w+'&h='+coords.h,
+                    data: post_name+info.options.upload_name+'='+image_info.name+'&'+info.options.upload_name+'_path='+image_info.path+'&x='+coords.x+'&y='+coords.y+'&w='+coords.w+'&h='+coords.h,
                     success: function(results) {
                         /* Validate json string */
                         if(!info._validate_json_str(results)) {
