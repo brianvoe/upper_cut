@@ -92,8 +92,8 @@ function upload() {
 
 function crop() {
     // Grab crop post variables
-    $image_path = $_POST['image_path'];
-    $image_name = $_POST['image_name'];
+    $image_name = $_POST['uc_image'];
+    $image_path = $_POST['uc_image_path'];
     $crop_w = $_POST['w'];
     $crop_h = $_POST['h'];
     $crop_x = $_POST['x'];

@@ -1233,7 +1233,7 @@
                 $.ajax({
                     type: 'POST',
                     url: info.options.crop_url,
-                    data: 'image_path='+image_info.path+'&image_name='+image_info.name+'&x='+coords.x+'&y='+coords.y+'&w='+coords.w+'&h='+coords.h,
+                    data: info.options.upload_name+'='+image_info.name+'&'+info.options.upload_name+'_path='+image_info.path+'&x='+coords.x+'&y='+coords.y+'&w='+coords.w+'&h='+coords.h,
                     success: function(results) {
                         /* Validate json string */
                         if(!info._validate_json_str(results)) {
