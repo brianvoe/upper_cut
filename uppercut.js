@@ -29,6 +29,7 @@
         images_height: 100, /* Images max height */
         images_edit_val: 'Edit', /* Value of edit button - false if dont want to show edit button */
         images_delete_val: 'Delete', /* Value of delete button - false if dont want to show delete button */
+        image_use_thumbnail: true, /* If returning thumbnail information use it */
 
         /* Input fields */
         input_type: 'advanced', /* Saved input fields type - simple(Just input field with value of final path) or advanced(Array of information various information) */
@@ -829,7 +830,9 @@
                             info.data.items[item_id].thumb_image.type = return_info.thumbnail.type;
 
                             /* thumbnail will use thumbnail appose to orig image */
-                            thumbnail = return_info.thumbnail;
+                            if(info.options.image_use_thumbnail) {
+                                thumbnail = return_info.thumbnail;
+                            }
                         }
 
                         /* If crop add image and initiate jcrop */
@@ -1046,7 +1049,9 @@
                         info.data.items[item_id].thumb_image.type = return_info.thumbnail.type;
 
                         /* thumbnail will use thumbnail appose to orig image */
-                        thumbnail = return_info.thumbnail;
+                        if(info.options.image_use_thumbnail) {
+                            thumbnail = return_info.thumbnail;
+                        }
                     }
 
                     /* If crop add image and initiate jcrop */
@@ -1294,7 +1299,9 @@
                                 info.data.items[item_id].thumb_image.type = return_info.thumbnail.type;
 
                                 /* thumbnail will use thumbnail appose to crop image */
-                                thumbnail = return_info.thumbnail;
+                                if(info.options.image_use_thumbnail) {
+                                    thumbnail = return_info.thumbnail;
+                                }
                             }
 
                             if(update) {
