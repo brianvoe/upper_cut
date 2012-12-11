@@ -256,7 +256,11 @@
             /* Add thumbnail data */
             if(import_data.thumbnail && info._validate_return_data(import_data.thumbnail)) {
                 info.data.items[item_id].thumb_image = import_data.thumbnail;
-                thumbnail = import_data.thumbnail;
+
+                /* If you want to use thumbnail for the thumbnail */
+                if(info.options.image_use_thumbnail) {
+                    thumbnail = import_data.thumbnail;
+                }
             }
 
             /* Add image thumbnail */
@@ -432,12 +436,20 @@
                 if(info.data.items[item_id].orig_image.name) {
                     info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[original][name]"+'" value="'+info.data.items[item_id].orig_image.name+'" />');
                     info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[original][path]"+'" value="'+info.data.items[item_id].orig_image.path+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[original][size]"+'" value="'+info.data.items[item_id].orig_image.size+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[original][height]"+'" value="'+info.data.items[item_id].orig_image.height+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[original][width]"+'" value="'+info.data.items[item_id].orig_image.width+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[original][type]"+'" value="'+info.data.items[item_id].orig_image.type+'" />');
                 }
 
                 /* Add crop input field */
                 if(info.data.items[item_id].crop_image.name) {
                     info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[crop][name]"+'" value="'+info.data.items[item_id].crop_image.name+'" />');
                     info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[crop][path]"+'" value="'+info.data.items[item_id].crop_image.path+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[crop][size]"+'" value="'+info.data.items[item_id].crop_image.size+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[crop][height]"+'" value="'+info.data.items[item_id].crop_image.height+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[crop][width]"+'" value="'+info.data.items[item_id].crop_image.width+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[crop][type]"+'" value="'+info.data.items[item_id].crop_image.type+'" />');
                     /* Crops x and y directions */
                     if(info.data.items[item_id].crop_image.coords) {
                         info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[crop][coords][x]"+'" value="'+info.data.items[item_id].crop_image.coords.x+'" />');
@@ -451,6 +463,10 @@
                 if(info.data.items[item_id].thumb_image.name) {
                     info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumb][name]"+'" value="'+info.data.items[item_id].thumb_image.name+'" />');
                     info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumb][path]"+'" value="'+info.data.items[item_id].thumb_image.path+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumb][size]"+'" value="'+info.data.items[item_id].thumb_image.size+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumb][height]"+'" value="'+info.data.items[item_id].thumb_image.height+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumb][width]"+'" value="'+info.data.items[item_id].thumb_image.width+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumb][type]"+'" value="'+info.data.items[item_id].thumb_image.type+'" />');
                 }
             }
         },
