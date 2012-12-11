@@ -461,12 +461,12 @@
 
                 /* Add thumb input field */
                 if(info.data.items[item_id].thumb_image.name) {
-                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumb][name]"+'" value="'+info.data.items[item_id].thumb_image.name+'" />');
-                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumb][path]"+'" value="'+info.data.items[item_id].thumb_image.path+'" />');
-                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumb][size]"+'" value="'+info.data.items[item_id].thumb_image.size+'" />');
-                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumb][height]"+'" value="'+info.data.items[item_id].thumb_image.height+'" />');
-                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumb][width]"+'" value="'+info.data.items[item_id].thumb_image.width+'" />');
-                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumb][type]"+'" value="'+info.data.items[item_id].thumb_image.type+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumbnail][name]"+'" value="'+info.data.items[item_id].thumb_image.name+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumbnail][path]"+'" value="'+info.data.items[item_id].thumb_image.path+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumbnail][size]"+'" value="'+info.data.items[item_id].thumb_image.size+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumbnail][height]"+'" value="'+info.data.items[item_id].thumb_image.height+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumbnail][width]"+'" value="'+info.data.items[item_id].thumb_image.width+'" />');
+                    info.data.main_cont.find('.upcut_inputs #'+input_id).append('<input type="hidden" name="'+input_name+"[thumbnail][type]"+'" value="'+info.data.items[item_id].thumb_image.type+'" />');
                 }
             }
         },
