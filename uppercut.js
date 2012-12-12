@@ -1228,27 +1228,7 @@
 
             /* Add event listener for not needing to crop and using original image */
             info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_crop_none').click(function() {
-                /* Change data input_path */
-                info._update_data_item_input_path(item_id, info.data.items[item_id].orig_image.path);
-
-                /* Check if we need to update */
-                if(update) {
-                    /* Update thumbnail */
-                    info._update_image_thumbnail(item_id, info.data.items[item_id].thumbnail.id, image);
-                } else {
-                    /* Add thumbnail */
-                    info._add_image_thumbnail(item_id, image);
-                }
-
-                /* Clear out crop data */
-                info.data.items[item_id].crop_image = jQuery.extend({}, info.data.image_array);
-                info.data.items[item_id].crop_image.coords = jQuery.extend({}, info.data.image_coords);
-
-                /* Add input field */
-                info._add_image_input(item_id);
-
-                /* Close and remove crop */
-                info._crop_remove();
+                info._crop_submit(item_id, image, {x: 0, y: 0, w: image.width, h: image.height}, (update ? true: false));
             });
 
             /* Add event listener for crop submit */
