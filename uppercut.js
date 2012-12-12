@@ -269,6 +269,19 @@
             /* Add input field */
             info._add_image_input(item_id);
         },
+        refresh_thumbnails: function() { /* Used to fix adding thumbnail to hidden div */
+            var info = ($.hasData(this) ? $(this).data('uppercut'): this);
+
+            /* Center images */
+            info.data.main_cont.find('.upcut_images .upcut_thumb').each(function() {
+                var thumb_id = $(this).attr('id');
+                var thumb_img = info.data.main_cont.find('.upcut_images #'+thumb_id+' .upcut_thumb_img img');
+                thumb_img.css({
+                    'margin-top': Math.ceil((info.options.images_height-thumb_img.height()) / 2)+'px',
+                    'margin-left': Math.ceil((info.options.images_width-thumb_img.width()) / 2)+'px'
+                });
+            });
+        },
         data: function() {
             var info = ($.hasData(this) ? $(this).data('uppercut'): this);
 
