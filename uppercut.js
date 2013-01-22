@@ -1403,7 +1403,6 @@
         _get_file_type: function(file) {
             var file_type = file.name.substr(file.name.lastIndexOf('.')+1);
             file_type = file_type.toLowerCase();
-            console.log(file_type);
             return file_type;
         },
         /* Validate file functions */
