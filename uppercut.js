@@ -1160,7 +1160,7 @@
             });
 
             /* Set container size */
-            cont_width = img_width + desc_width + 1; /* Minor fix, had issue with desc being dropped under img */
+            cont_width = img_width + desc_width + 5; /* Minor fix, had issue with desc being dropped under img */
             cont_height = (img_height <= desc_height ? desc_height + title_height : img_height + title_height);
             info.data.main_cont.find('.upcut_crop .uc_crop_cont').css({
                 width: cont_width + 'px',
@@ -1401,7 +1401,10 @@
             return file_path.replace(/^.*[\\\/]/, '');
         },
         _get_file_type: function(file) {
-            return file.name.substr(file.name.lastIndexOf('.')+1);
+            var file_type = file.name.substr(file.name.lastIndexOf('.')+1);
+            file_type = file_type.toLowerCase();
+            console.log(file_type);
+            return file_type;
         },
         /* Validate file functions */
         _validate_file: function(file) {
