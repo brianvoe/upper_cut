@@ -1,5 +1,9 @@
 <?php
 
+$uploaddir = '';
+$cropdir = '';
+$thumbnaildir = '';
+
 if ($_GET['which'] == 'upload') {
     upload();
 }
