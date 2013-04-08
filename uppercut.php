@@ -1,8 +1,8 @@
 <?php
 
-$uploaddir = '';
-$cropdir = '';
-$thumbnaildir = '';
+$uploaddir = 'images/uploads/';
+$cropdir = 'images/crops/';
+$thumbnaildir = 'images/thumbnails/';
 
 if ($_GET['which'] == 'upload') {
     upload();
