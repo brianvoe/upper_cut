@@ -1,5 +1,9 @@
 <?php
 
+$uploaddir = '';
+$cropdir = '';
+$thumbnaildir = '';
+
 if ($_GET['which'] == 'upload') {
     upload();
 }
@@ -11,7 +15,7 @@ function upload() {
     // Options
     $allowed_types = array('jpg', 'jpeg', 'pjpeg', 'gif', 'bmp', 'png', 'x-png'); // Allowed file types
     $max_size = 10 * (1024 * 1024); // Maximum filesize in bytes (currently 10MB).
-    $upload_path = 'images/uploads/'; // Upload location - trailing slash
+    $upload_path = $uploaddir; // Upload location - trailing slash
 
     // Should we send back a thumbnail
     $thumbnail = true;
@@ -59,7 +63,7 @@ function upload() {
         $return_info['status'] = 'error';
         $return_info['info'] = 'Upload directory is not writable';
     }
-    if(!is_writable('images/uploads/') || !is_writable('images/crops/') || !is_writable('images/thumbnails/')) { // Check to make sure image folders are writeable
+    if(!is_writable($uploaddir) || !is_writable($cropdir) || !is_writable($thumbnaildir)) { // Check to make sure image folders are writeable
         $return_info['status'] = 'error';
         $return_info['info'] = 'Make sure images folders are writeable';
     }
@@ -99,7 +103,7 @@ function crop() {
     $crop_h = $_POST['h'];
     $crop_x = $_POST['x'];
     $crop_y = $_POST['y'];
-    $upload_path = 'images/crops/'; // Crops location - trailing slash
+    $upload_path = $cropdir; // Crops location - trailing slash
     
     // Should we send back a thumbnail
     $thumbnail = true;
@@ -134,7 +138,7 @@ function crop() {
 
 function thumbnail($image_name, $image_path, $image_width, $image_height) {
     // Thumbnail settings
-    $thumbnail_path = 'images/thumbnails/';
+    $thumbnail_path = $thumbnaildir;
     $thumbnail_height = 150;
     $thumbnail_width = 150;
 
