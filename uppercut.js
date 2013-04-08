@@ -1456,7 +1456,7 @@
         },
         _validate_json_str: function(str) {
             try {
-                JSON.parse(str);
+                jQuery.parseJSON(str);
             } catch (e) {
                 return false;
             }
