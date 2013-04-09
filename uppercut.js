@@ -100,7 +100,7 @@
             }
 
             /* Deal with stupid internet explorer */
-            if (/msie [1-8]./.test(navigator.userAgent.toLowerCase())) {
+            if (/msie [1-9]./.test(navigator.userAgent.toLowerCase())) {
                 ie_browser = true;
 
                 /* Force iframe upload */
