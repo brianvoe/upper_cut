@@ -12,6 +12,8 @@ if ($_GET['which'] == 'crop') {
 }
 
 function upload() {
+    global $uploaddir, $cropdir, $thumbnaildir;
+
     // Options
     $allowed_types = array('jpg', 'jpeg', 'pjpeg', 'gif', 'bmp', 'png', 'x-png'); // Allowed file types
     $max_size = 10 * (1024 * 1024); // Maximum filesize in bytes (currently 10MB).
@@ -95,6 +97,8 @@ function upload() {
 }
 
 function crop() {
+    global $uploaddir, $cropdir, $thumbnaildir;
+
     // Grab crop post variables
     $post_name = $_POST['post_name'];
     $image_name = $_POST[$post_name];
@@ -137,6 +141,8 @@ function crop() {
 }
 
 function thumbnail($image_name, $image_path, $image_width, $image_height) {
+    global $uploaddir, $cropdir, $thumbnaildir;
+    
     // Thumbnail settings
     $thumbnail_path = $thumbnaildir;
     $thumbnail_height = 150;
