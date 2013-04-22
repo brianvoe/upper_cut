@@ -188,7 +188,7 @@
                 /* html5 upload creation */
 
                 /* Add hidden input file field */
-                info.data.main_cont.append('<input style="display: none;" '+(info.options.multiple && !info.options.crop_force ? 'multiple="multiple"' : '')+' class="upcut_input_upload" type="file" />');
+                info.data.main_cont.append('<input style="'+/*display: none;*/''+' position: absolute; top: -1000px;" '+(info.options.multiple && !info.options.crop_force ? 'multiple="multiple"' : '')+' class="upcut_input_upload" type="file" />');
 
                 /* Add change event to upload file */
                 info.data.main_cont.find('.upcut_input_upload').change(function(){
