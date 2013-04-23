@@ -1226,7 +1226,9 @@
                 /* Style preview image */
                 preview_img.css({
                     width: Math.round(scalex * image.width) + 'px', /* Grab original image width */
+                    maxWidth: Math.round(scalex * image.width) + 'px',
                     height: Math.round(scaley * image.height) + 'px', /* Grab original image height */
+                    maxHeight: Math.round(scaley * image.height) + 'px',
                     marginLeft: '-' + Math.round(scalex * coords.x) + 'px',
                     marginTop: '-' + Math.round(scaley * coords.y) + 'px'
                 });
