@@ -802,25 +802,8 @@
                 cache: false,
                 contentType: false,
                 processData: false,
+                dataType: 'json',
                 success: function(return_info) {
-                    /* Validate json string */
-                    if(!info._validate_json_str(return_info)) {
-                        /* Add error */
-                        info._add_error('upload_submit', 'Return info was not a proper json string');
-
-                        /* Error */
-                        info._update_queue_status(item_id, queue_id, 'error', 'There was a problem submitting your image');
-
-                        /* Remove queue */
-                        info._remove_queue_item(item_id, queue_id);
-
-                        /* Remove data */
-                        info._remove_data_item(item_id);
-
-                        return;
-                    }
-                
-                    return_info = $.parseJSON(return_info);
                     if(return_info.status == 'error') {
                         /* Script returned error */
                         info._update_queue_status(item_id, queue_id, 'error', return_info.info);
@@ -1020,23 +1003,6 @@
 
             iframe_cont.load(function() {
                 iframe_cont.contents().find('body form').remove(); /* Remove form */
-
-                /* Validate json string */
-                if(!info._validate_json_str(iframe_cont.contents().find('body').html())) {
-                    /* Add error */
-                    info._add_error('upload_submit', 'Return info was not a proper json string');
-
-                    /* Error */
-                    info._update_queue_status(item_id, queue_id, 'error', 'There was a problem submitting your image');
-
-                    /* Remove queue */
-                    info._remove_queue_item(item_id, queue_id);
-
-                    /* Remove data */
-                    info._remove_data_item(item_id);
-
-                    return;
-                }
 
                 return_info = $.parseJSON(iframe_cont.contents().find('body').html());
                 iframe_cont.unbind('load');
@@ -1268,22 +1234,8 @@
                     type: 'POST',
                     url: info.options.crop_url,
                     data: post_name+info.options.upload_name+'='+image_info.name+'&'+info.options.upload_name+'_path='+image_info.path+'&x='+coords.x+'&y='+coords.y+'&w='+coords.w+'&h='+coords.h,
-                    success: function(results) {
-                        /* Validate json string */
-                        if(!info._validate_json_str(results)) {
-                            /* Add error */
-                            info._add_error('crop_submit', 'Return info was not a proper json string');
-
-                            /* Close and remove crop */
-                            info._crop_remove();
-
-                            /* Show error message */
-                            info._general_message('error', 'There was a problem cropping image');
-                            return;
-                        }
-
-                        /* Grab results data */
-                        var return_info = $.parseJSON(results);
+                    dataType: 'json',
+                    success: function(return_info) {
                         if(return_info.status == 'success') {
                             /* Change data input_path */
                             info._update_data_item_input_path(item_id, return_info.file.path);
@@ -1455,14 +1407,6 @@
             var info = this;
             if(!return_info.name || !return_info.path || !return_info.size || !return_info.height || !return_info.width || !return_info.type) {
                 info._general_message('error', 'Must send all file info data: name, path, size, height, width and type');
-                return false;
-            }
-            return true;
-        },
-        _validate_json_str: function(str) {
-            try {
-                jQuery.parseJSON(str);
-            } catch (e) {
                 return false;
             }
             return true;
