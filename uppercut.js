@@ -38,7 +38,7 @@
         /* Crop */
         crop: true, /* Whether or not to crop image after upload - If true, multiple will be set to false */
         crop_title: 'Crop Image', /* Title of crop dialog box show at top of crop box */
-        crop_square: false, /* Whether or not to keep square 1 by 1 aspect ratio */
+        crop_ratio: 0, /* Whether crop aspect ratio is set or not - if 0 it is free form cropping */
         crop_force: false, /* When uploading disable multiple image selection (cause we would want to make the user crop after each upload) but allow multiple images to be uploaded */
 
         /* Browse Button */
@@ -1159,7 +1159,7 @@
             info.data.main_cont.find('#'+crop_image_id).Jcrop({
                 onChange: crop_preview,
                 onSelect: crop_preview,
-                aspectRatio: (info.options.crop_square ? 1 : 0),
+                aspectRatio: info.options.crop_ratio,
                 setSelect: crop_set_select,
                 trueSize: [image.width,image.height], /* Actual size of original image */
                 bgOpacity: .4

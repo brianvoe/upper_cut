@@ -86,6 +86,22 @@
             <div id="force_upload"></div>
         </div>
         <br /><br /><br />
+        <!-- Set Image Crop Aspect Ratio Usage -->
+        <div>
+            <h2>Aspect Ratio Image Crop Usage</h2>
+            <script>
+                $(document).ready(function(){
+                    $('#ratio_upload').uppercut({
+                        upload_url: 'uppercut.php?which=upload',
+                        crop_url: 'uppercut.php?which=crop',
+                        crop_force: true, /* Force user to crop image after upload - Forces single image selection */
+                        crop_ratio: 2.64
+                    });
+                });
+            </script>
+            <div id="ratio_upload"></div>
+        </div>
+        <br /><br /><br />
         <!-- Import Image Usage -->
         <div>
             <h2>Import Image Usage</h2>
