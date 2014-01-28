@@ -40,6 +40,7 @@
         crop_title: 'Crop Image', /* Title of crop dialog box show at top of crop box */
         crop_ratio: 0, /* Whether crop aspect ratio is set or not - if 0 it is free form cropping */
         crop_force: false, /* When uploading disable multiple image selection (cause we would want to make the user crop after each upload) but allow multiple images to be uploaded */
+        crop_show_full_btn: true, /* This option is for whether or not to show the "Use Full Image" button */
 
         /* Browse Button */
         browse_button: true, /* Whether or not to show browse button */
@@ -1090,7 +1091,7 @@
             crop_cont += '      <div class="uc_crop_desc">';
             crop_cont += '          <div class="uc_crop_preview"><div><img src="'+image.path+'" /></div></div>'; /* Crop preview */
             crop_cont += '          <div class="uc_crop_preview_text">Preview</div>';
-            crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_none">Use Full Image</div>';
+            crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_none" '+(info.options.crop_show_full_btn ? '': 'style="display: none;"')+'>Use Full Image</div>';
             crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_submit">Submit Crop</div>';
             crop_cont += '          <div class="uc_crop_img_info"></div>';
             crop_cont += '      </div>';
