@@ -1093,11 +1093,16 @@
             crop_cont += '          <div class="uc_crop_preview_text">Preview</div>';
             crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_none" '+(info.options.crop_show_full_btn ? '': 'style="display: none;"')+'>Use Full Image</div>';
             crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_submit">Submit Crop</div>';
+            crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_processing">Processing...</div>';
             crop_cont += '          <div class="uc_crop_img_info"></div>';
             crop_cont += '      </div>';
             crop_cont += '  </div>';
             crop_cont += '</div>';
             info.data.main_cont.find('.upcut_crop').html(crop_cont);
+
+            /* Show submit hide processing */
+            info.data.main_cont.find('.upcut_crop .uc_crop_cont .upcut_crop_processing').hide();
+            info.data.main_cont.find('.upcut_crop .uc_crop_cont .upcut_crop_submit').show();
 
             /* Set height width variables - based upon fitting window size */
             desc_width = info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc').outerWidth(true);
@@ -1213,11 +1218,17 @@
 
             /* Add event listener for not needing to crop and using original image */
             info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_crop_none').click(function() {
+                /* Submit Crop */
                 info._crop_submit(item_id, image, {x: 0, y: 0, w: image.width, h: image.height}, (update ? true: false));
             });
 
             /* Add event listener for crop submit */
             info.data.main_cont.find('.uc_crop_overlay .uc_crop_desc .upcut_crop_submit').click(function() {
+                /* Show Processing */
+                info.data.main_cont.find('.upcut_crop .uc_crop_cont .upcut_crop_submit').hide();
+                info.data.main_cont.find('.upcut_crop .uc_crop_cont .upcut_crop_processing').show();
+
+                /* Submit Crop */
                 info._crop_submit(item_id, image, crop_coords, (update ? true: false));
             });
         },
