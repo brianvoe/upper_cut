@@ -517,7 +517,7 @@
 
             if(info.options.browse_primary) {
                 /* Use browse image as primary image */
-                info.data.main_cont.find('.upcut_buttons .upcut_browse').html('<div class="upcut_image_browse"><img style="max-width: '+info.options.images_width+'px; max-height: '+info.options.images_height+'px;" src="'+file_info.path+(info.options.ie_img_cache && info.options.ie_browser ? '?'+new Date().getTime():'')+'" /></div>');
+                info.data.main_cont.find('.upcut_buttons .upcut_browse').html('<div class="upcut_image_browse"><img style="max-width: '+info.options.images_width+'%; max-height: '+info.options.images_height+'%;" src="'+file_info.path+(info.options.ie_img_cache && info.options.ie_browser ? '?'+new Date().getTime():'')+'" /></div>');
 
                 /* Add click event to browse button */
                 info.data.main_cont.find('.upcut_buttons .upcut_browse .upcut_image_browse').click(function(){
@@ -696,8 +696,8 @@
 
             /* Add name to queue display */
             var text = '';
-            text += '<div style="float: left;">Name: '+info._minimize_file_name(file_info.name, info.options.name_char_limit)+'</div>';
-            text += '<div style="float: right;">'+(file_info.size > 0 ? 'Size: '+info._size_in_text(file_info.size) : '')+'</div>';
+            text += '<div><strong>Name:</strong> '+info._minimize_file_name(file_info.name, info.options.name_char_limit)+'</div>';
+            text += '<div>'+(file_info.size > 0 ? '<strong>Size:</strong> '+info._size_in_text(file_info.size) : '')+'</div>';
             text += '<div style="clear: both;"></div>';
             info.data.main_cont.find('.upcut_queue #'+queue_id+' .upcut_queue_display').html(text);
 
@@ -1088,11 +1088,11 @@
             var crop_cont = '';
             crop_cont += '<div class="uc_crop_overlay">';
             crop_cont += '  <div class="uc_crop_cont">'
-            crop_cont += '      <div class="uc_crop_title">'+info.options.crop_title+'<div class="uc_crop_close">X</div></div>';
+            crop_cont += '      <div class="uc_crop_title">'+info.options.crop_title+'<div class="uc_crop_close">x</div></div>';
             crop_cont += '      <div class="uc_crop_img"><img id="'+crop_image_id+'" src="'+image.path+'" /></div>'; /* Add Image */
             crop_cont += '      <div class="uc_crop_desc">';
+            crop_cont += '          <div class="uc_crop_preview_text">Image Preview</div>';
             crop_cont += '          <div class="uc_crop_preview"><div><img src="'+image.path+'" /></div></div>'; /* Crop preview */
-            crop_cont += '          <div class="uc_crop_preview_text">Preview</div>';
             crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_none" '+(info.options.crop_show_full_btn ? '': 'style="display: none;"')+'>Use Full Image</div>';
             crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_submit">Submit Crop</div>';
             crop_cont += '          <div class="upcut_btn upcut_btn_crop upcut_crop_processing">Processing...</div>';
