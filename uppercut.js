@@ -1328,11 +1328,16 @@
             }
         },
         _object_length: function(object) {
+            var info = this;
             var count = 0;
 
-            for (i in object) {
-                if (object.hasOwnProperty(i)) {
-                    count++;
+            if(info.options.html5 == false) {
+                count = 1;
+            } else {
+                for (i in object) {
+                    if (object.hasOwnProperty(i)) {
+                        count++;
+                    }
                 }
             }
 
