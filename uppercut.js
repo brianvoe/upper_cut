@@ -100,15 +100,17 @@
                 info.options.crop = false;
             }
 
-            /* Deal with stupid internet explorer */
-            if (/msie [1-9]./.test(navigator.userAgent.toLowerCase())) {
-                ie_browser = true;
-
-                /* Force iframe upload */
-                info.options.html5 = false;
-
-                /* Add error to array */
-                info._add_error('using_ie', 'For some reason your using internet explorer');
+            /* Internet Explorer */
+            if (navigator.appName == "Microsoft Internet Explorer") {
+                /* Create a user agent var */
+                var ua = navigator.userAgent;
+                /* Write a new regEx to find the version number */
+                var re = new RegExp("MSIE ([0-9]{1,}[.0-9]{0,})");
+                /* If the regEx through the userAgent is not null and if less than 10 */
+                if (re.exec(ua) != null && parseInt(RegExp.$1) < 10) {
+                    /* Set the IE version */
+                    info.options.ie_browser = true;
+                }
             }
 
             /* If browse button is the primary image force single image */
