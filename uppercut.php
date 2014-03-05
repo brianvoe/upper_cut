@@ -93,7 +93,7 @@ function upload() {
     }
 
     // Return file info
-    header('Content-Type: application/json');
+    header('Content-Type: text/html'); // Need to set to text/html for ie purposes
     echo json_encode($return_info);
 }
 
@@ -138,7 +138,7 @@ function crop() {
         $return_info['thumbnail'] = thumbnail($image_name, $upload_path.$image_name, $crop->getWidth(), $crop->getHeight());
     }
 
-    header('Content-Type: application/json');
+    header('Content-Type: text/html'); // Need to set to text/html for ie purposes
     echo json_encode($return_info);
 }
 
