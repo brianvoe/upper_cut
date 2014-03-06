@@ -109,6 +109,7 @@
                 /* If the regEx through the userAgent is not null and if less than 10 */
                 if (re.exec(ua) != null && parseInt(RegExp.$1) < 10) {
                     /* Set the IE version */
+                    info.options.html5 = false;
                     info.options.ie_browser = true;
                 }
             }
